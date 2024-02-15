@@ -1,20 +1,36 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react'
+import { View, StyleSheet, SafeAreaView, Text } from 'react-native'
+import AllClaim from './src/components/AllClaim'
+import AddClaim from './src/components/AddClaim'
+import SingleClaim from './src/components/SingleClaim'
+import EditClaim from './src/components/EditClaim'
+import { NavigationContainer } from '@react-navigation/native'
+import { createStackNavigator } from '@react-navigation/stack'
 
-export default function App() {
+const Stack = createStackNavigator()
+
+const App = () => {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="AllClaim">
+        <Stack.Screen
+          name="AllClaim"
+          component={AllClaim}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen name="AddClaim" component={AddClaim} />
+        <Stack.Screen name="SingleClaim" component={SingleClaim} />
+        <Stack.Screen name="EditClaim" component={EditClaim} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
-});
+})
+
+export default App

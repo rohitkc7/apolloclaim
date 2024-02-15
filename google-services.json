@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "425736760066",
+    "project_id": "apollo-claim",
+    "storage_bucket": "apollo-claim.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:425736760066:android:4735e666e49e8432a5f01b",
+        "android_client_info": {
+          "package_name": "com.wpkayce.appolloClaim"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCggQE20t5aoLvjf4pvqUkYpWC7qJuTTPg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
