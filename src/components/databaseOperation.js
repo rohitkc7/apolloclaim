@@ -1,49 +1,68 @@
 import * as SQLite from 'expo-sqlite'
 import db from './db'
-//const db = SQLite.openDatabase('apollo.db')
-
-// db.transaction((tx) => {
-//   tx.executeSql(
-//     'CREATE TABLE IF NOT EXISTS claims (id INTEGER PRIMARY KEY AUTOINCREMENT, claimTitle TEXT, tyreSize TEXT, brandName TEXT, companyName TEXT, serialNumber INTEGER, mouldNo INTEGER, nsd1 INTEGER, nsd2 INTEGER, nsd3 INTEGER, nsd4 INTEGER, nsd5 INTEGER, defectArea TEXT, defectName TEXT)',
-//   )
-// })
 
 const insertClaim = (formData, onSuccess, onError) => {
   const {
-    claimTitle,
+    segment,
+    application,
     tyreSize,
+    plyRating,
     brandName,
     companyName,
-    serialNumber,
     mouldNo,
     nsd1,
     nsd2,
     nsd3,
     nsd4,
     nsd5,
+    pattern,
     defectArea,
     defectName,
+    pic1,
   } = formData
 
   db.transaction(
     (tx) => {
       console.log('transaction started')
+      console.log(
+        'Values:',
+        segment,
+        application,
+        tyreSize,
+        plyRating,
+        brandName,
+        companyName,
+        mouldNo,
+        nsd1,
+        nsd2,
+        nsd3,
+        nsd4,
+        nsd5,
+        pattern,
+        defectArea,
+        defectName,
+        pic1,
+      )
+
       tx.executeSql(
-        'INSERT INTO claims (claimTitle, tyreSize, brandName, companyName, serialNumber, mouldNo, nsd1, nsd2, nsd3, nsd4, nsd5, defectArea, defectName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO claims (segment, application, tyreSize, plyRating,  brandName, companyName, mouldNo, nsd1, nsd2, nsd3, nsd4, nsd5, pattern, defectArea, defectName, pic1) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)',
         [
-          claimTitle,
+          segment,
+          application,
           tyreSize,
+          plyRating,
           brandName,
           companyName,
-          serialNumber,
           mouldNo,
           nsd1,
           nsd2,
           nsd3,
           nsd4,
           nsd5,
+          pattern,
           defectArea,
           defectName,
+          pic1,
         ],
         (_, results) => {
           onSuccess(results.insertId)
@@ -58,6 +77,7 @@ const insertClaim = (formData, onSuccess, onError) => {
     },
     () => {
       console.log('Transaction completed successfully')
+      console.log('')
     },
   )
 }

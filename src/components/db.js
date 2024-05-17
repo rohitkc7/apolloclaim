@@ -1,11 +1,35 @@
 import * as SQLite from 'expo-sqlite'
-import { openDatabase } from 'expo-sqlite'
 
 const db = SQLite.openDatabase('apollo.db')
 
 db.transaction((tx) => {
   tx.executeSql(
-    'CREATE TABLE IF NOT EXISTS claims (id INTEGER PRIMARY KEY AUTOINCREMENT, claimTitle TEXT, tyreSize TEXT, brandName TEXT, companyName TEXT, serialNumber INTEGER, mouldNo INTEGER, nsd1 INTEGER, nsd2 INTEGER, nsd3 INTEGER, nsd4 INTEGER, nsd5 INTEGER, defectArea TEXT, defectName TEXT, image TEXT)',
+    `CREATE TABLE IF NOT EXISTS claims (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        segment TEXT,
+        application TEXT,
+        tyreSize TEXT,
+        plyRating TEXT,
+        brandName TEXT,
+        companyName TEXT,
+        mouldNo TEXT,
+        nsd1 TEXT,
+        nsd2 TEXT,
+        nsd3 TEXT,
+        nsd4 TEXT,
+        nsd5 TEXT,
+        pattern TEXT,
+        defectArea TEXT,
+        defectName TEXT,
+        pic1 TEXT
+      )`,
+    [],
+    () => {
+      console.log('Table claims created successfully.')
+    },
+    (error) => {
+      console.error('Error creating table claims:', error)
+    },
   )
 })
 

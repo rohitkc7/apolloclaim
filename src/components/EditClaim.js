@@ -23,17 +23,19 @@ const EditClaim = ({}) => {
   const { claimId } = route.params
 
   const [claimData, setClaimData] = useState({
-    claimTitle: '',
+    segment: '',
+    application: '',
     tyreSize: '',
+    plyRating: '',
     brandName: '',
     companyName: '',
-    serialNumber: '',
     mouldNo: '',
     nsd1: '',
     nsd2: '',
     nsd3: '',
     nsd4: '',
     nsd5: '',
+    pattern: '',
     defectArea: '',
     defectName: '',
   })
@@ -49,17 +51,19 @@ const EditClaim = ({}) => {
         (_, { rows }) => {
           const fetchedClaimData = rows._array[0]
           const updatedClaimData = {
-            claimTitle: fetchedClaimData.claimTitle || '',
+            segment: fetchedClaimData.segment || '',
+            application: fetchedClaimData.application || '',
             tyreSize: String(fetchedClaimData.tyreSize) || '',
+            plyRating: fetchedClaimData.plyRating || '',
             brandName: fetchedClaimData.brandName || '',
             companyName: fetchedClaimData.companyName || '',
-            serialNumber: String(fetchedClaimData.serialNumber) || '',
-            mouldNo: String(fetchedClaimData.mouldNo) || '',
+            mouldNo: fetchedClaimData.mouldNo || '',
             nsd1: String(fetchedClaimData.nsd1) || '',
             nsd2: String(fetchedClaimData.nsd2) || '',
-            nsd3: String(fetchedClaimData.nsd3) || '', // Convert to string
-            nsd4: String(fetchedClaimData.nsd4) || '', // Convert to string
-            nsd5: String(fetchedClaimData.nsd5) || '', // Convert to string
+            nsd3: String(fetchedClaimData.nsd3) || '',
+            nsd4: String(fetchedClaimData.nsd4) || '',
+            nsd5: String(fetchedClaimData.nsd5) || '',
+            pattern: fetchedClaimData.pattern || '',
             defectArea: fetchedClaimData.defectArea || '',
             defectName: fetchedClaimData.defectName || '',
           }
@@ -77,7 +81,6 @@ const EditClaim = ({}) => {
       [fieldName]: value,
     })
   }
-
   // Use handleInputChange as the change handler for all forms
   const handleForm1Change = handleInputChange
   const handleForm2Change = handleInputChange
@@ -86,19 +89,21 @@ const EditClaim = ({}) => {
   const handleSaveChanges = () => {
     db.transaction((tx) => {
       tx.executeSql(
-        'UPDATE claims SET claimTitle=?, tyreSize=?, brandName=?, companyName=?, serialNumber=?, mouldNo=?, nsd1=?, nsd2=?, nsd3=?, nsd4=?, nsd5=?, defectArea=?, defectName=? WHERE id=?',
+        'UPDATE claims SET segment=?, application=?, tyreSize=?, plyRating=?, brandName=?, companyName=?, mouldNo=?, nsd1=?, nsd2=?, nsd3=?, nsd4=?, nsd5=?, pattern=?, defectArea=?, defectName=? WHERE id=?',
         [
-          claimData.claimTitle,
+          claimData.segment,
+          claimData.application,
           claimData.tyreSize,
+          claimData.plyRating,
           claimData.brandName,
           claimData.companyName,
-          claimData.serialNumber,
           claimData.mouldNo,
           claimData.nsd1,
           claimData.nsd2,
           claimData.nsd3,
           claimData.nsd4,
           claimData.nsd5,
+          claimData.pattern,
           claimData.defectArea,
           claimData.defectName,
           claimId,
@@ -134,7 +139,7 @@ const EditClaim = ({}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    paddingTop: Platform.OS === 'android' ? 25 : 0,
+    // paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
   input: {
     height: 40,
@@ -155,6 +160,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
+  },
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
   },
 })
 

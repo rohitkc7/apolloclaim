@@ -5,9 +5,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   TouchableOpacity,
-  Button,
 } from 'react-native'
 import { insertClaim } from './databaseOperation.js'
 import Form1 from './Form1'
@@ -16,11 +14,12 @@ import Form3 from './Form3'
 
 const AddClaim = ({ navigation }) => {
   const [formData, setFormData] = useState({
-    claimTitle: '',
+    segment: '',
+    application: '',
     tyreSize: '',
+    plyRating: '',
     brandName: '',
     companyName: '',
-    serialNumber: '',
 
     mouldNo: '',
     nsd1: '',
@@ -29,24 +28,28 @@ const AddClaim = ({ navigation }) => {
     nsd4: '',
     nsd5: '',
 
+    pattern: '',
     defectArea: '',
     defectName: '',
     pic1: '',
   })
+
   const [currentPage, setCurrentPage] = useState(1)
   useEffect(() => {
     setFormData({
-      claimTitle: '',
+      segment: '',
+      application: '',
       tyreSize: '',
+      plyRating: '',
       brandName: '',
       companyName: '',
-      serialNumber: '',
       mouldNo: '',
       nsd1: '',
       nsd2: '',
       nsd3: '',
       nsd4: '',
       nsd5: '',
+      pattern: '',
       defectArea: '',
       defectName: '',
       pic1: '',
@@ -66,54 +69,24 @@ const AddClaim = ({ navigation }) => {
   }
 
   const handleFormChange = (fieldName, value) => {
-    if (
-      [
-        'serialNumber',
-        'mouldNo',
-        'nsd1',
-        'nsd2',
-        'nsd3',
-        'nsd4',
-        'nsd5',
-      ].includes(fieldName)
-    ) {
-      // Validate if the value is a valid integer before updating the state
-      if (/^\d*$/.test(value)) {
-        setFormData({
-          ...formData,
-          [fieldName]: value,
-        })
-      }
-    } else {
-      setFormData({
-        ...formData,
-        [fieldName]: value,
-      })
-    }
-  }
-
-  const validateForm = () => {
-    if (formData.claimTitle.trim() === '') {
-      alert('Claim title cannot be empty')
-      return false
-    }
-    return true
+    setFormData({
+      ...formData,
+      [fieldName]: value,
+    })
   }
 
   const submitData = () => {
     console.log('Submit data')
-    if (validateForm()) {
-      insertClaim(
-        formData,
-        (insertId) => {
-          console.log('Claim saved successfully')
-          navigation.navigate('AllClaim')
-        },
-        (error) => {
-          console.error('Failed to save:', error)
-        },
-      )
-    }
+    insertClaim(
+      formData,
+      (insertId) => {
+        console.log('Claim saved successfully')
+        navigation.navigate('AllClaim')
+      },
+      (error) => {
+        console.error('Failed to save:', error)
+      },
+    )
   }
 
   const renderForm = () => {
@@ -123,7 +96,13 @@ const AddClaim = ({ navigation }) => {
       case 2:
         return <Form2 formData={formData} onChange={handleFormChange} />
       case 3:
-        return <Form3 formData={formData} onChange={handleFormChange} />
+        return (
+          <Form3
+            formData={formData}
+            onChange={handleFormChange}
+            onPic1Change={(uri) => setFormData({ ...formData, pic1: uri })}
+          />
+        )
       default:
         return null
     }

@@ -11,8 +11,9 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native'
-
+import FontAwesome from '@expo/vector-icons/FontAwesome'
 import db from './db'
+import { Platform } from 'react-native'
 
 const AllClaim = ({ navigation, route }) => {
   const [claims, setClaims] = useState([])
@@ -98,7 +99,7 @@ const AllClaim = ({ navigation, route }) => {
   const renderClaimItem = ({ item }) => (
     <View style={styles.claimItemContainer}>
       <View style={styles.claimItemContent}>
-        <Text style={styles.claimTitle}>{item.claimTitle}</Text>
+        <Text style={styles.claimTitle}>{item.application}</Text>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
@@ -153,7 +154,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingTop: Platform.OS === 'android' ? 25 : 0,
   },
-  header: { flexDirection: 'row', justifyContent: 'space-between' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   claimHeading: {
     padding: 10,
   },

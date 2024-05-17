@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, Image, StyleSheet, ScrollView } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 
 import db from './db'
@@ -48,8 +48,20 @@ const SingleClaim = ({ route }) => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.section}>
+        <Text style={styles.title}>Segment</Text>
+        <Text style={styles.content}>{claim.segment}</Text>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.title}>Application:</Text>
+        <Text style={styles.content}>{claim.application}</Text>
+      </View>
+      <View style={styles.section}>
         <Text style={styles.title}>Tyre Size:</Text>
         <Text style={styles.content}>{claim.tyreSize}</Text>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.title}>Ply Rating:</Text>
+        <Text style={styles.content}>{claim.plyRating}</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.title}>Brand Name:</Text>
@@ -58,10 +70,6 @@ const SingleClaim = ({ route }) => {
       <View style={styles.section}>
         <Text style={styles.title}>Company Name:</Text>
         <Text style={styles.content}>{claim.companyName}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Serial Number:</Text>
-        <Text style={styles.content}>{claim.serialNumber}</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.title}>Mould No:</Text>
@@ -88,12 +96,20 @@ const SingleClaim = ({ route }) => {
         <Text style={styles.content}>{claim.nsd5}</Text>
       </View>
       <View style={styles.section}>
+        <Text style={styles.title}>Pattern:</Text>
+        <Text style={styles.content}>{claim.pattern}</Text>
+      </View>
+      <View style={styles.section}>
         <Text style={styles.title}>Defect Area:</Text>
         <Text style={styles.content}>{claim.defectArea}</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.title}>Defect Name:</Text>
         <Text style={styles.content}>{claim.defectName}</Text>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.title}>Image:</Text>
+        <Text style={styles.content}>{claim.pic1}</Text>
       </View>
     </ScrollView>
   )
