@@ -5,13 +5,15 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  FlatList,
+  ScrollView,
   Image,
   TouchableOpacity,
   Button,
+  Modal,
 } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
-import * as ImagePicker from 'expo-image-picker'
+import { Camera, CameraType } from 'expo-camera/legacy'
+import * as FileSystem from 'expo-file-system'
 
 const patternData = [
   { label: 'RIB', value: 'rib' },
@@ -126,8 +128,54 @@ const defectNameData = [
 const Form3 = ({ formData, onChange, onPic1Change }) => {
   const [value, setValue] = useState(null)
   const [isFocus, setIsFocus] = useState(false)
-  const [hasPermission, setHasPermission] = useState(null)
-  const [camera, setCamera] = useState(null)
+  const [showCamera, setShowCamera] = useState(false)
+  const [type, setType] = useState(CameraType.back)
+  const [permission, requestPermission] = Camera.useCameraPermissions()
+  const [photoUri, setPhotoUri] = useState(null)
+  const [photos, setPhotos] = useState(formData.photos || [])
+
+  if (!permission) {
+    return <View />
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ textAlign: 'center' }}>
+          We need your permission to show the camera
+        </Text>
+        <Button onPress={requestPermission} title="grant permission" />
+      </View>
+    )
+  }
+
+  const toggleCameraType = () => {
+    setType((prevType) =>
+      prevType === Camera.Constants.Type.back
+        ? Camera.Constants.Type.front
+        : Camera.Constants.Type.back,
+    )
+  }
+
+  const takePhoto = async () => {
+    if (cameraRef) {
+      let photo = await cameraRef.takePictureAsync({ base64: true })
+      const fileName = `photo_${Date.now()}.jpg`
+      const filePath = `${FileSystem.documentDirectory}${fileName}`
+
+      // Save the base64 image to the file system
+      await FileSystem.writeAsStringAsync(filePath, photo.base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      })
+
+      const newPhotos = [...photos, filePath]
+      setPhotos(newPhotos)
+      onChange('photos', newPhotos)
+      setShowCamera(false)
+    }
+  }
+
+  let cameraRef
 
   const renderLabel = () => {
     if (value || isFocus) {
@@ -198,10 +246,49 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
           onChange={(item) => onChange('defectName', item.value)}
         />
       </View>
-      {/* <View style={styles.container}>
-        <Button title="Pick an image from camera roll" onPress={pickImage} />
-        {image && <Image source={{ uri: image }} style={styles.image} />}
-      </View> */}
+      <View style={styles.cameraContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowCamera(true)}
+        >
+          <Text style={styles.text}>Click a Photo</Text>
+        </TouchableOpacity>
+        {photos.length > 0 && (
+          <ScrollView horizontal style={styles.photoContainer}>
+            {photos.slice(0, 3).map((photoUri, index) => (
+              <Image
+                key={index}
+                source={{ uri: photoUri }}
+                style={styles.photo}
+              />
+            ))}
+          </ScrollView>
+        )}
+      </View>
+      <Modal visible={showCamera} transparent={false} animationType="slide">
+        <Camera
+          style={styles.fullScreenCamera}
+          type={type}
+          ref={(ref) => {
+            cameraRef = ref
+          }}
+        >
+          <View style={styles.fullScreenButtonContainer}>
+            <TouchableOpacity style={styles.button} onPress={toggleCameraType}>
+              <Text style={styles.text}>Flip Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={takePhoto}>
+              <Text style={styles.text}>Take Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setShowCamera(false)}
+            >
+              <Text style={styles.text}>Exit Camera</Text>
+            </TouchableOpacity>
+          </View>
+        </Camera>
+      </Modal>
     </SafeAreaView>
   )
 }
@@ -267,23 +354,26 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  imageContainer: {
-    borderRadius: 8,
-    marginBottom: 16,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 5,
+  fullScreenCamera: {
+    flex: 1,
   },
-  image: {
-    width: 200,
-    height: 200,
-    borderRadius: 8,
+  fullScreenButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  errorText: {
-    color: 'red',
-    marginTop: 16,
+  photoContainer: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  photo: {
+    width: 100,
+    height: 100,
+    marginHorizontal: 5,
   },
 })
 export default Form3

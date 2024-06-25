@@ -3,16 +3,15 @@ import {
   StyleSheet,
   View,
   SafeAreaView,
-  ScrollView,
-  TextInput,
   Text,
   Image,
   FlatList,
   TouchableOpacity,
   Alert,
 } from 'react-native'
-import FontAwesome from '@expo/vector-icons/FontAwesome'
-import db from './db'
+
+import setupDatabase from './db'
+import { insertClaim } from './databaseOperation'
 import { Platform } from 'react-native'
 
 const AllClaim = ({ navigation, route }) => {
@@ -22,7 +21,6 @@ const AllClaim = ({ navigation, route }) => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchClaims() // Fetch claims data when the page is focused
     })
-
     return unsubscribe
   }, [navigation])
 
@@ -30,21 +28,16 @@ const AllClaim = ({ navigation, route }) => {
     fetchClaims()
   }, [])
 
-  const fetchClaims = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'SELECT * FROM claims',
-        [],
-        (_, { rows: { _array } }) => {
-          //console.log('Fetched claims:', _array)
-          setClaims(_array)
-        },
-        (_, error) => {
-          console.error('Error fetching claims:', error)
-        },
-      )
-    })
+  const fetchClaims = async () => {
+    try {
+      const db = await setupDatabase() // Wait for database setup to complete
+      const rows = await db.getAllAsync('SELECT * FROM claims')
+      setClaims(rows) // Set the fetched claims to the state
+    } catch (error) {
+      console.error('Error fetching claims:', error)
+    }
   }
+
   const handleAddClaim = () => {
     navigation.navigate('AddClaim')
   }
@@ -76,26 +69,22 @@ const AllClaim = ({ navigation, route }) => {
       { cancelable: true },
     )
   }
-  const deleteClaim = (claimId) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'DELETE FROM claims WHERE id = ?',
-        [claimId],
-        (_, { rowsAffected }) => {
-          if (rowsAffected > 0) {
-            console.log('Claim deleted successfully')
-            fetchClaims()
-          } else {
-            console.log('No claim found with ID:', claimId)
-          }
-        },
-        (_, error) => {
-          console.error('Error deleting claim:', error)
-        },
-      )
-    })
+  const deleteClaim = async (claimId) => {
+    try {
+      const db = await setupDatabase() // Wait for database setup to complete
+      const result = await db.runAsync('DELETE FROM claims WHERE id = ?', [
+        claimId,
+      ])
+      if (result.changes > 0) {
+        console.log('Claim deleted successfully')
+        fetchClaims() // Refresh claims after deletion
+      } else {
+        console.log('No claim found with ID:', claimId)
+      }
+    } catch (error) {
+      console.error('Error deleting claim:', error)
+    }
   }
-
   const renderClaimItem = ({ item }) => (
     <View style={styles.claimItemContainer}>
       <View style={styles.claimItemContent}>

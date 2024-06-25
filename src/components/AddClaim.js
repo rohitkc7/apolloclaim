@@ -7,11 +7,11 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native'
-import { insertClaim } from './databaseOperation.js'
 import Form1 from './Form1'
 import Form2 from './Form2'
 import Form3 from './Form3'
-
+import { insertClaim } from './databaseOperation'
+import setupDatabase from './db'
 const AddClaim = ({ navigation }) => {
   const [formData, setFormData] = useState({
     segment: '',
@@ -20,18 +20,16 @@ const AddClaim = ({ navigation }) => {
     plyRating: '',
     brandName: '',
     companyName: '',
-
     mouldNo: '',
     nsd1: '',
     nsd2: '',
     nsd3: '',
     nsd4: '',
     nsd5: '',
-
     pattern: '',
     defectArea: '',
     defectName: '',
-    pic1: '',
+    photos: [],
   })
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -52,7 +50,7 @@ const AddClaim = ({ navigation }) => {
       pattern: '',
       defectArea: '',
       defectName: '',
-      pic1: '',
+      photos: [],
     })
     setCurrentPage(1)
   }, [])
@@ -75,18 +73,23 @@ const AddClaim = ({ navigation }) => {
     })
   }
 
-  const submitData = () => {
-    console.log('Submit data')
-    insertClaim(
-      formData,
-      (insertId) => {
-        console.log('Claim saved successfully')
-        navigation.navigate('AllClaim')
-      },
-      (error) => {
-        console.error('Failed to save:', error)
-      },
-    )
+  const submitData = async () => {
+    try {
+      console.log('Form Data:', formData) // Log form data before submission
+      const insertId = await insertClaim(formData)
+      console.log('Claim saved successfully with ID:', insertId)
+      navigation.navigate('AllClaim')
+    } catch (error) {
+      console.error('Failed to save:', error)
+    }
+  }
+  const handlePhotoSelection = (photoBase64) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      photos: [...prevState.photos, photoBase64], // Add the selected photo base64 to the photos array
+    }))
+    console.log('Photo added:', photoBase64)
+    console.log('Updated formData:', formData)
   }
 
   const renderForm = () => {
@@ -100,7 +103,7 @@ const AddClaim = ({ navigation }) => {
           <Form3
             formData={formData}
             onChange={handleFormChange}
-            onPic1Change={(uri) => setFormData({ ...formData, pic1: uri })}
+            onPhotoSelect={handlePhotoSelection}
           />
         )
       default:

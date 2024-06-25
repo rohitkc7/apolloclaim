@@ -1,31 +1,33 @@
-import * as SQLite from 'expo-sqlite'
-import db from './db'
+import setupDatabase from './db'
 
-const insertClaim = (formData, onSuccess, onError) => {
-  const {
-    segment,
-    application,
-    tyreSize,
-    plyRating,
-    brandName,
-    companyName,
-    mouldNo,
-    nsd1,
-    nsd2,
-    nsd3,
-    nsd4,
-    nsd5,
-    pattern,
-    defectArea,
-    defectName,
-    pic1,
-  } = formData
+const insertClaim = async (formData) => {
+  try {
+    const db = await setupDatabase()
+    const {
+      segment,
+      application,
+      tyreSize,
+      plyRating,
+      brandName,
+      companyName,
+      mouldNo,
+      nsd1,
+      nsd2,
+      nsd3,
+      nsd4,
+      nsd5,
+      pattern,
+      defectArea,
+      defectName,
+      photos,
+    } = formData
 
-  db.transaction(
-    (tx) => {
-      console.log('transaction started')
-      console.log(
-        'Values:',
+    const photosString = JSON.stringify(photos)
+    console.log('Photos being saved:', photosString)
+
+    const result = await db.runAsync(
+      `
+      INSERT INTO claims (
         segment,
         application,
         tyreSize,
@@ -41,45 +43,36 @@ const insertClaim = (formData, onSuccess, onError) => {
         pattern,
         defectArea,
         defectName,
-        pic1,
+        photos
       )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        segment,
+        application,
+        tyreSize,
+        plyRating,
+        brandName,
+        companyName,
+        mouldNo,
+        nsd1,
+        nsd2,
+        nsd3,
+        nsd4,
+        nsd5,
+        pattern,
+        defectArea,
+        defectName,
+        photosString,
+      ],
+    )
 
-      tx.executeSql(
-        'INSERT INTO claims (segment, application, tyreSize, plyRating,  brandName, companyName, mouldNo, nsd1, nsd2, nsd3, nsd4, nsd5, pattern, defectArea, defectName, pic1) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)',
-        [
-          segment,
-          application,
-          tyreSize,
-          plyRating,
-          brandName,
-          companyName,
-          mouldNo,
-          nsd1,
-          nsd2,
-          nsd3,
-          nsd4,
-          nsd5,
-          pattern,
-          defectArea,
-          defectName,
-          pic1,
-        ],
-        (_, results) => {
-          onSuccess(results.insertId)
-        },
-        (_, error) => {
-          onError(error)
-        },
-      )
-    },
-    (error) => {
-      onError(error)
-    },
-    () => {
-      console.log('Transaction completed successfully')
-      console.log('')
-    },
-  )
+    console.log('Claim saved successfully with ID:', result.lastInsertRowId)
+    return result.lastInsertRowId
+  } catch (error) {
+    console.error('Failed to save claim:', error)
+    throw error // Propagate the error for handling at higher levels
+  }
 }
 
 export { insertClaim }

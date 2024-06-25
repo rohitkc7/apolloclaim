@@ -2,33 +2,37 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, Image, StyleSheet, ScrollView } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 
-import db from './db'
+import setupDatabase from './db'
+import { insertClaim } from './db.js'
 
 const SingleClaim = ({ route }) => {
   const { claimId } = route.params
   const [claim, setClaim] = useState(null)
+  const navigation = useNavigation()
 
   useEffect(() => {
     fetchClaimDetails()
   }, [])
 
-  const fetchClaimDetails = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
+  const fetchClaimDetails = async () => {
+    try {
+      const db = await setupDatabase()
+      const claimData = await db.getFirstAsync(
         'SELECT * FROM claims WHERE id = ?',
         [claimId],
-        (_, { rows }) => {
-          const claimData = rows._array[0]
-          console.log('Fetched claim data:', claimData)
-          setClaim(claimData)
-        },
-        (_, error) => {
-          console.error('Error fetching claim details:', error)
-        },
       )
-    })
+      if (claimData.photos) {
+        claimData.photos = JSON.parse(claimData.photos)
+      } else {
+        claimData.photos = []
+      }
+      setClaim(claimData)
+      console.log('Fetched claim data:', claimData)
+    } catch (error) {
+      console.error('Error fetching claim details:', error)
+    }
   }
-  const navigation = useNavigation()
+
   React.useLayoutEffect(() => {
     if (claim) {
       navigation.setOptions({
@@ -108,8 +112,16 @@ const SingleClaim = ({ route }) => {
         <Text style={styles.content}>{claim.defectName}</Text>
       </View>
       <View style={styles.section}>
-        <Text style={styles.title}>Image:</Text>
-        <Text style={styles.content}>{claim.pic1}</Text>
+        <Text style={styles.title}>Photos:</Text>
+        <ScrollView horizontal style={styles.photoContainer}>
+          {claim.photos.map((photoUri, index) => (
+            <Image
+              key={index}
+              source={{ uri: photoUri }}
+              style={styles.photo}
+            />
+          ))}
+        </ScrollView>
       </View>
     </ScrollView>
   )
@@ -131,6 +143,16 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 16,
+  },
+  photoContainer: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  photo: {
+    width: 100,
+    height: 100,
+    marginRight: 8,
+    borderRadius: 8,
   },
   // Add more styles as needed
 })
