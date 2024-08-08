@@ -1,5 +1,6 @@
 import setupDatabase from './db'
 
+
 const insertClaim = async (formData) => {
   try {
     const db = await setupDatabase()
@@ -10,12 +11,11 @@ const insertClaim = async (formData) => {
       plyRating,
       brandName,
       companyName,
+      serialNumber,
       mouldNo,
       nsd1,
       nsd2,
       nsd3,
-      nsd4,
-      nsd5,
       pattern,
       defectArea,
       defectName,
@@ -23,7 +23,11 @@ const insertClaim = async (formData) => {
     } = formData
 
     const photosString = JSON.stringify(photos)
-    console.log('Photos being saved:', photosString)
+
+    console.log(
+      'Inserting claim with following data:', formData
+    )
+
 
     const result = await db.runAsync(
       `
@@ -34,18 +38,17 @@ const insertClaim = async (formData) => {
         plyRating,
         brandName,
         companyName,
+        serialNumber,
         mouldNo,
         nsd1,
         nsd2,
         nsd3,
-        nsd4,
-        nsd5,
         pattern,
         defectArea,
         defectName,
         photos
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
       `,
       [
         segment,
@@ -54,12 +57,11 @@ const insertClaim = async (formData) => {
         plyRating,
         brandName,
         companyName,
+        serialNumber,
         mouldNo,
         nsd1,
         nsd2,
         nsd3,
-        nsd4,
-        nsd5,
         pattern,
         defectArea,
         defectName,
@@ -71,7 +73,7 @@ const insertClaim = async (formData) => {
     return result.lastInsertRowId
   } catch (error) {
     console.error('Failed to save claim:', error)
-    throw error // Propagate the error for handling at higher levels
+    throw error 
   }
 }
 

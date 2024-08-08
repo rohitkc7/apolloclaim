@@ -1,7 +1,8 @@
 import * as SQLite from 'expo-sqlite'
 
 const setupDatabase = async () => {
-  const db = await SQLite.openDatabaseAsync('databaseName')
+  const db = await SQLite.openDatabaseAsync('databaseName', {useNewConnection:true})
+ 
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS claims (
@@ -12,12 +13,11 @@ const setupDatabase = async () => {
       plyRating TEXT,
       brandName TEXT,
       companyName TEXT,
+      serialNumber TEXT,
       mouldNo TEXT,
       nsd1 TEXT,
       nsd2 TEXT,
       nsd3 TEXT,
-      nsd4 TEXT,
-      nsd5 TEXT,
       pattern TEXT,
       defectArea TEXT,
       defectName TEXT,

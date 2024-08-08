@@ -108,7 +108,7 @@ const EditClaim = ({}) => {
     try {
       const db = await setupDatabase()
       await db.runAsync(
-        'UPDATE claims SET segment=?, application=?, tyreSize=?, plyRating=?, brandName=?, companyName=?, mouldNo=?, nsd1=?, nsd2=?, nsd3=?, nsd4=?, nsd5=?, pattern=?, defectArea=?, defectName=?, photos=? WHERE id=?',
+        'UPDATE claims SET segment=?, application=?, tyreSize=?, plyRating=?, brandName=?, companyName=?, serialNumber=?, mouldNo=?, nsd1=?, nsd2=?, nsd3=?, pattern=?, defectArea=?, defectName=?, photos=? WHERE id=?',
         [
           claimData.segment,
           claimData.application,
@@ -116,12 +116,11 @@ const EditClaim = ({}) => {
           claimData.plyRating,
           claimData.brandName,
           claimData.companyName,
+          claimData.serialNumber,
           claimData.mouldNo,
           claimData.nsd1,
           claimData.nsd2,
           claimData.nsd3,
-          claimData.nsd4,
-          claimData.nsd5,
           claimData.pattern,
           claimData.defectArea,
           claimData.defectName,

@@ -76,6 +76,10 @@ const SingleClaim = ({ route }) => {
         <Text style={styles.content}>{claim.companyName}</Text>
       </View>
       <View style={styles.section}>
+        <Text style={styles.title}>Serial Number:</Text>
+        <Text style={styles.content}>{claim.serialNumber}</Text>
+      </View>
+      <View style={styles.section}>
         <Text style={styles.title}>Mould No:</Text>
         <Text style={styles.content}>{claim.mouldNo}</Text>
       </View>
@@ -90,14 +94,6 @@ const SingleClaim = ({ route }) => {
       <View style={styles.section}>
         <Text style={styles.title}>NSD3:</Text>
         <Text style={styles.content}>{claim.nsd3}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>NSD4:</Text>
-        <Text style={styles.content}>{claim.nsd4}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>NSD5:</Text>
-        <Text style={styles.content}>{claim.nsd5}</Text>
       </View>
       <View style={styles.section}>
         <Text style={styles.title}>Pattern:</Text>

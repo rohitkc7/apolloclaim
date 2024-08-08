@@ -124,14 +124,36 @@ const defectNameData = [
     value: 'valve-shaft-out-of-base',
   },
 ]
-
+const DropdownField = ({ label, data, value, onChange }) => {
+  const [isFocus, setIsFocus] = useState(false);
+  
+  return (
+    <>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <Dropdown
+        style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={data}
+        search
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus ? 'Select item' : '...'}
+        searchPlaceholder="Search..."
+        onFocus={() => setIsFocus(true)}
+        onBlur={() => setIsFocus(false)}
+        value={value}
+        onChange={(item) => onChange(item.value)}
+      />
+    </>
+  );
+};
 const Form3 = ({ formData, onChange, onPic1Change }) => {
-  const [value, setValue] = useState(null)
-  const [isFocus, setIsFocus] = useState(false)
   const [showCamera, setShowCamera] = useState(false)
   const [type, setType] = useState(CameraType.back)
   const [permission, requestPermission] = Camera.useCameraPermissions()
-  const [photoUri, setPhotoUri] = useState(null)
   const [photos, setPhotos] = useState(formData.photos || [])
 
   if (!permission) {
@@ -177,73 +199,26 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
 
   let cameraRef
 
-  const renderLabel = () => {
-    if (value || isFocus) {
-      return (
-        <Text style={[styles.label, isFocus && { color: 'blue' }]}>
-          Dropdown label
-        </Text>
-      )
-    }
-    return null
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <View>
-        <Text style={styles.inputLabel}>Pattern</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={patternData}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          value={formData.pattern}
-          onChange={(item) => onChange('pattern', item.value)}
+      <DropdownField 
+          label="Pattern" 
+          data={patternData} 
+          value={formData.pattern} 
+          onChange={(value) => onChange('pattern', value)} 
         />
-        <Text style={styles.inputLabel}>Defect Area</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={defectAreaData}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          value={formData.defectArea}
-          onChange={(item) => onChange('defectArea', item.value)}
+        <DropdownField 
+          label="Defect Area" 
+          data={defectAreaData} 
+          value={formData.defectArea} 
+          onChange={(value) => onChange('defectArea', value)} 
         />
-        <Text style={styles.inputLabel}>Defect Name</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={defectNameData}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          value={formData.defectName}
-          onChange={(item) => onChange('defectName', item.value)}
+        <DropdownField 
+          label="Defect Name" 
+          data={defectNameData} 
+          value={formData.defectName} 
+          onChange={(value) => onChange('defectName', value)} 
         />
       </View>
       <View style={styles.cameraContainer}>

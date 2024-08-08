@@ -55,117 +55,110 @@ const plyRating = [
 ]
 
 const Form1 = ({ formData, onChange }) => {
-  const [valueSegment, setValueSegment] = useState(null)
-  const [valueTyreSize, setValueTyreSize] = useState(null)
-  const [valuePlyRating, setValuePlyRating] = useState(null)
-  const [value, setValue] = useState(null)
-  const [isFocus, setIsFocus] = useState(false)
+  const [isFocus, setIsFocus] = useState({
+    segment: false,
+    tyreSize: false,
+    plyRating: false,
+  })
 
-  const handleSegmentChange = (segmentValue) => {
-    onChange('segment', segmentValue)
+  const handleFocus = (field) => {
+    setIsFocus((prev) => ({ ...prev, [field]: true }))
   }
 
-  const handleTyreSizeChange = (tyreSizeValue) => {
-    onChange('tyreSize', tyreSizeValue) // Update formData with selected tyreSize
+  const handleBlur = (field) => {
+    setIsFocus((prev) => ({ ...prev, [field]: false }))
   }
 
-  const handlePlyRatingChange = (plyRatingValue) => {
-    onChange('plyRating', plyRatingValue) // Update formData with selected plyRating
-  }
-
-  const renderLabel = () => {
-    if (valueSegment || isFocus) {
-      return (
-        <Text style={[styles.label, isFocus && { color: 'blue' }]}>
-          Dropdown label
-        </Text>
-      )
-    }
-    return null
+  const handleChange = (field, value) => {
+    onChange(field, value)
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
-        <Text style={styles.inputLabel}>Segment</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={segmentData}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          value={valueSegment}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={(item) => handleSegmentChange(item.value)}
-        />
-        <Text style={styles.inputLabel}>Application</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => onChange('application', text)}
-          placeholder="Enter Application Name"
-          value={formData.application}
-        />
-        <Text style={styles.inputLabel}>Tyre Size</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={tyreSizeData}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          value={valueTyreSize}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={(item) => handleTyreSizeChange(item.value)}
-        />
-        <Text style={styles.inputLabel}>Ply Rating</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={plyRating}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placehoder={!isFocus ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          value={valuePlyRating}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onChange={(item) => handlePlyRatingChange(item.value)}
-        />
+    <View>
+      <Text style={styles.inputLabel}>Segment</Text>
+      <Dropdown
+        style={[styles.dropdown, isFocus.segment && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={segmentData}
+        search
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus.segment ? 'Select item' : '...'}
+        searchPlaceholder="Search..."
+        value={formData.segment}
+        onFocus={() => handleFocus('segment')}
+        onBlur={() => handleBlur('segment')}
+        onChange={(item) => handleChange('segment', item.value)}
+      />
 
-        <Text style={styles.inputLabel}>Company Name</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => onChange('companyName', text)}
-          placeholder="Enter Company Name"
-          value={formData.companyName}
-        />
-        <Text style={styles.inputLabel}>Brand Name</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => onChange('brandName', text)}
-          placeholder="Enter Brand Name"
-          value={formData.brandName}
-        />
-      </View>
-    </SafeAreaView>
-  )
+      <Text style={styles.inputLabel}>Application</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={(text) => handleChange('application', text)}
+        placeholder="Enter Application Name"
+        value={formData.application}
+      />
+
+      <Text style={styles.inputLabel}>Tyre Size</Text>
+      <Dropdown
+        style={[styles.dropdown, isFocus.tyreSize && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={tyreSizeData}
+        search
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus.tyreSize ? 'Select item' : '...'}
+        searchPlaceholder="Search..."
+        value={formData.tyreSize}
+        onFocus={() => handleFocus('tyreSize')}
+        onBlur={() => handleBlur('tyreSize')}
+        onChange={(item) => handleChange('tyreSize', item.value)}
+      />
+
+      <Text style={styles.inputLabel}>Ply Rating</Text>
+      <Dropdown
+        style={[styles.dropdown, isFocus.plyRating && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={plyRating}
+        search
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus.plyRating ? 'Select item' : '...'}
+        searchPlaceholder="Search..."
+        value={formData.plyRating}
+        onFocus={() => handleFocus('plyRating')}
+        onBlur={() => handleBlur('plyRating')}
+        onChange={(item) => handleChange('plyRating', item.value)}
+      />
+
+      <Text style={styles.inputLabel}>Company Name</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={(text) => handleChange('companyName', text)}
+        placeholder="Enter Company Name"
+        value={formData.companyName}
+      />
+
+      <Text style={styles.inputLabel}>Brand Name</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={(text) => handleChange('brandName', text)}
+        placeholder="Enter Brand Name"
+        value={formData.brandName}
+      />
+    </View>
+  </SafeAreaView>
+)
 }
 
 const styles = StyleSheet.create({
