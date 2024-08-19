@@ -7,6 +7,8 @@ const setupDatabase = async () => {
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS claims (
       id INTEGER PRIMARY KEY NOT NULL,
+      location TEXT,
+      customerName TEXT,
       segment TEXT,
       application TEXT,
       tyreSize TEXT,

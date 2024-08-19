@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Image, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, Image, StyleSheet, ScrollView ,Button, Alert} from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-
 import setupDatabase from './db'
-import { insertClaim } from './db.js'
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
+
 
 const SingleClaim = ({ route }) => {
   const { claimId } = route.params
@@ -33,10 +35,69 @@ const SingleClaim = ({ route }) => {
     }
   }
 
+  const generateCSV = async () => {
+    const headers = [
+      'Location', 'Customer Name', 'Segment', 'Application', 'Tyre Size',
+      'Ply Rating', 'Brand Name', 'Company Name', 'Serial Number', 'Mould No',
+      'NSD1', 'NSD2', 'NSD3', 'Pattern', 'Defect Area', 'Defect Name', 'Photos'
+    ];
+    const data = [headers, [
+      claim.location, claim.customerName, claim.segment, claim.application, claim.tyreSize,
+      claim.plyRating, claim.brandName, claim.companyName, claim.serialNumber, claim.mouldNo,
+      claim.nsd1, claim.nsd2, claim.nsd3, claim.pattern, claim.defectArea, claim.defectName,
+      claim.photos.join(', ')
+    ]];
+    
+    const csv = data.map(row => row.join(',')).join('\n');
+    
+    const fileUri = FileSystem.documentDirectory + 'claim.csv';
+    await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 });
+    
+    return fileUri;
+  };
+
+  const handleSave = async () => {
+    const format = await new Promise((resolve) => {
+      Alert.alert(
+        'Choose Format',
+        'Select the format you want to save the file as:',
+        [
+          { text: 'CSV', onPress: () => resolve('CSV') },
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
+        ],
+      );
+    });
+
+    if (!format) return;
+
+    try {
+      let fileUri;
+      if (format === 'CSV') {
+        fileUri = await generateCSV();
+      } 
+
+     // Share the file
+    if (await Sharing.isAvailableAsync()) {
+      await Sharing.shareAsync(fileUri);
+    } else {
+      Alert.alert('Error', 'Sharing is not available on this device.');
+    }
+  } catch (error) {
+    console.error('Error saving file:', error);
+  }
+  };
+
   React.useLayoutEffect(() => {
     if (claim) {
       navigation.setOptions({
         title: claim.claimTitle,
+        headerRight: () => (
+          <Button
+            onPress={handleSave}
+            title="Save"
+            color="#007bff"
+          />
+        ),
       })
     }
   }, [navigation, claim])
@@ -51,6 +112,14 @@ const SingleClaim = ({ route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+         <View style={styles.section}>
+        <Text style={styles.title}>Location</Text>
+        <Text style={styles.content}>{claim.location}</Text>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.title}>Customer Name</Text>
+        <Text style={styles.content}>{claim.customerName}</Text>
+      </View>
       <View style={styles.section}>
         <Text style={styles.title}>Segment</Text>
         <Text style={styles.content}>{claim.segment}</Text>

@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
-  TextInput,
-  Button,
   ScrollView,
   Image,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native'
 import { useRoute, useNavigation } from '@react-navigation/native'
+import { updateClaim } from './databaseOperation' 
+import Toast from 'react-native-toast-message';
 
+import Form from './Form'
 import Form1 from './Form1'
 import Form2 from './Form2'
 import Form3 from './Form3'
 
 import setupDatabase from './db'
-import { insertClaim } from './db.js'
 
 const EditClaim = ({}) => {
   const route = useRoute()
@@ -25,18 +25,19 @@ const EditClaim = ({}) => {
   const { claimId } = route.params
 
   const [claimData, setClaimData] = useState({
+    location:'',
+    customerName:'',
     segment: '',
     application: '',
     tyreSize: '',
     plyRating: '',
     brandName: '',
     companyName: '',
+    serialNumber:'',
     mouldNo: '',
     nsd1: '',
     nsd2: '',
     nsd3: '',
-    nsd4: '',
-    nsd5: '',
     pattern: '',
     defectArea: '',
     defectName: '',
@@ -56,18 +57,19 @@ const EditClaim = ({}) => {
 
       if (result) {
         const updatedClaimData = {
+          location: result.location || '',
+          customerName: result.customerName ||'',
           segment: result.segment || '',
           application: result.application || '',
           tyreSize: String(result.tyreSize) || '',
           plyRating: result.plyRating || '',
           brandName: result.brandName || '',
           companyName: result.companyName || '',
+          serialNumber: result.serialNumber|| '',
           mouldNo: result.mouldNo || '',
           nsd1: String(result.nsd1) || '',
           nsd2: String(result.nsd2) || '',
           nsd3: String(result.nsd3) || '',
-          nsd4: String(result.nsd4) || '',
-          nsd5: String(result.nsd5) || '',
           pattern: result.pattern || '',
           defectArea: result.defectArea || '',
           defectName: result.defectName || '',
@@ -100,36 +102,28 @@ const EditClaim = ({}) => {
     })
   }
   // Use handleInputChange as the change handler for all forms
+  const handleFormChange = handleInputChange
   const handleForm1Change = handleInputChange
   const handleForm2Change = handleInputChange
-  const handleForm3Change = handleInputChange
 
   const handleSaveChanges = async () => {
     try {
-      const db = await setupDatabase()
-      await db.runAsync(
-        'UPDATE claims SET segment=?, application=?, tyreSize=?, plyRating=?, brandName=?, companyName=?, serialNumber=?, mouldNo=?, nsd1=?, nsd2=?, nsd3=?, pattern=?, defectArea=?, defectName=?, photos=? WHERE id=?',
-        [
-          claimData.segment,
-          claimData.application,
-          claimData.tyreSize,
-          claimData.plyRating,
-          claimData.brandName,
-          claimData.companyName,
-          claimData.serialNumber,
-          claimData.mouldNo,
-          claimData.nsd1,
-          claimData.nsd2,
-          claimData.nsd3,
-          claimData.pattern,
-          claimData.defectArea,
-          claimData.defectName,
-          JSON.stringify(claimData.photos),
-          claimId,
-        ],
-      )
+      await updateClaim(claimId, claimData)
       console.log('Claim updated successfully')
-      navigation.navigate('AllClaim')
+          // Show success message
+    Toast.show({
+      type: 'success',
+      position: 'top',
+      text1: 'Success',
+      text2: 'Claim updated successfully',
+      visibilityTime: 2000, // Duration in milliseconds
+    });
+
+    // Navigate back after showing the message
+    setTimeout(() => {
+      navigation.navigate('AllClaim');
+    }, 2000); // Make sure this matches the visibilityTime for smooth experience
+
     } catch (error) {
       console.error('Error updating claim:', error)
     }
@@ -138,6 +132,7 @@ const EditClaim = ({}) => {
   return (
     <ScrollView>
       <View style={styles.container}>
+        <Form formData={claimData} onChange={handleFormChange} />
         <Form1 formData={claimData} onChange={handleForm1Change} />
         <Form2 formData={claimData} onChange={handleForm2Change} />
         <Form3

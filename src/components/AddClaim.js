@@ -7,12 +7,15 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native'
+import Form from './Form'
 import Form1 from './Form1'
 import Form2 from './Form2'
 import Form3 from './Form3'
 import { insertClaim } from './databaseOperation'
 
 const initialFormData = {
+  location:'',
+  customerName:'',
   segment: '',
   application: '',
   tyreSize: '',
@@ -58,7 +61,6 @@ const AddClaim = ({ navigation }) => {
     try {
       console.log('Form Data:', formData);
       const insertId = await insertClaim(formData);
-     // console.log('Claim saved successfully with ID:', insertId);
       navigation.navigate('AllClaim');
     } catch (error) {
       console.error('Failed to save:', error);
@@ -68,10 +70,12 @@ const AddClaim = ({ navigation }) => {
   const renderForm = () => {
     switch (currentPage) {
       case 1:
-        return <Form1 formData={formData} onChange={handleFormChange} />;
+        return <Form formData={formData} onChange={handleFormChange}/>;
       case 2:
-        return <Form2 formData={formData} onChange={handleFormChange} />;
+        return <Form1 formData={formData} onChange={handleFormChange} />;
       case 3:
+        return <Form2 formData={formData} onChange={handleFormChange} />;
+      case 4:
         return (
           <Form3
             formData={formData}
@@ -94,9 +98,9 @@ const AddClaim = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.nextButton}
-            onPress={currentPage === 3 ? submitData : () => setCurrentPage((prev) => Math.min(prev + 1, 3))}
+            onPress={currentPage === 4 ? submitData : () => setCurrentPage((prev) => Math.min(prev + 1, 4))}
           >
-            <Text style={styles.buttonText}>{currentPage === 3 ? 'Submit' : 'Next'}</Text>
+            <Text style={styles.buttonext}>{currentPage === 4 ? 'Submit' : 'Next'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.prevButton}
