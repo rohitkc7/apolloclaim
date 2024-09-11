@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Image, StyleSheet, ScrollView ,Button, Alert} from 'react-native'
+import { View, Text, Image, StyleSheet, ScrollView ,Button, Alert ,TouchableOpacity} from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import setupDatabase from './db'
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import ImageView from 'react-native-image-viewing';
 
 
 
 const SingleClaim = ({ route }) => {
+  const [isImageViewVisible, setIsImageViewVisible]= useState(false)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const { claimId } = route.params
   const [claim, setClaim] = useState(null)
   const navigation = useNavigation()
@@ -33,6 +36,10 @@ const SingleClaim = ({ route }) => {
     } catch (error) {
       console.error('Error fetching claim details:', error)
     }
+  }
+  const handleImagePress = (index) => {
+    setSelectedImageIndex(index)
+    setIsImageViewVisible(true)
   }
 
   const generateCSV = async () => {
@@ -178,17 +185,31 @@ const SingleClaim = ({ route }) => {
       </View>
       <View style={styles.section}>
         <Text style={styles.title}>Photos:</Text>
-        <ScrollView horizontal style={styles.photoContainer}>
+        <ScrollView horizontal style={styles.photoContainer} >
+
           {claim.photos.map((photoUri, index) => (
+                    <TouchableOpacity
+                    key={index}
+                    onPress={() => handleImagePress(index)}
+                  >
             <Image
               key={index}
               source={{ uri: photoUri }}
               style={styles.photo}
+            
             />
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
+      <ImageView
+      images={claim.photos.map((uri) => ({ uri }))}
+      imageIndex={selectedImageIndex}
+      visible={isImageViewVisible}
+      onRequestClose={() => setIsImageViewVisible(false)}
+    />
     </ScrollView>
+    
   )
 }
 

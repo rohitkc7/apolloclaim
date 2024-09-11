@@ -61,11 +61,25 @@ const AddClaim = ({ navigation }) => {
     try {
       console.log('Form Data:', formData);
       const insertId = await insertClaim(formData);
-      navigation.navigate('AllClaim');
+      setFormData(initialFormData);
+      navigation.navigate('HomeApollo');
     } catch (error) {
       console.error('Failed to save:', error);
     }
   };
+  const renderFormTitle = () => {
+    switch (currentPage) {
+      case 1:
+        return "Customer and Application Details";
+      case 2:
+        return "Tyre Details";
+      case 3: 
+        return "Complaint Detail and Pictures";
+      case 4:  
+        return "Preview and Submit";
+      default: "Fill the details to add new Claim"
+    }
+  }
 
   const renderForm = () => {
     switch (currentPage) {
@@ -74,13 +88,12 @@ const AddClaim = ({ navigation }) => {
       case 2:
         return <Form1 formData={formData} onChange={handleFormChange} />;
       case 3:
-        return <Form2 formData={formData} onChange={handleFormChange} />;
+        return <Form2 formData={formData} onChange={handleFormChange}  onPhotoSelect={handlePhotoSelection}/>;
       case 4:
         return (
           <Form3
             formData={formData}
             onChange={handleFormChange}
-            onPhotoSelect={handlePhotoSelection}
           />
         );
       default:
@@ -92,7 +105,7 @@ const AddClaim = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View>
-          <Text style={styles.titleText}>Fill the details to add new Claims.</Text>
+          <Text style={styles.titleText}>{renderFormTitle()}</Text>
           {renderForm()}
         </View>
         <View style={styles.buttonContainer}>
@@ -100,7 +113,9 @@ const AddClaim = ({ navigation }) => {
             style={styles.nextButton}
             onPress={currentPage === 4 ? submitData : () => setCurrentPage((prev) => Math.min(prev + 1, 4))}
           >
-            <Text style={styles.buttonext}>{currentPage === 4 ? 'Submit' : 'Next'}</Text>
+            <Text style={styles.buttonText}>
+              {currentPage === 4 ? 'Submit' : currentPage === 3 ? 'Preview' : 'Next'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.prevButton}

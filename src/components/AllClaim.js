@@ -12,6 +12,9 @@ import {
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import Checkbox from 'expo-checkbox';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { DrawerActions } from '@react-navigation/native';
+
 
 import setupDatabase from './db'
 import { Platform } from 'react-native'
@@ -20,7 +23,8 @@ const AllClaim = ({ navigation, route }) => {
   const [claims, setClaims] = useState([])
   const [isCheckboxMode, setCheckboxMode] = useState(false)
   const [selectedClaims, setSelectedClaims] = useState(new Set()); // Track selected claims
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -34,8 +38,6 @@ const AllClaim = ({ navigation, route }) => {
 return () => {
   unsubscribe();
   unsubscribeBlur();
-
-
 };
 }, [navigation ]);
 
@@ -47,60 +49,25 @@ return () => {
     try {
       const db = await setupDatabase() // Wait for database setup to complete
       const rows = await db.getAllAsync('SELECT * FROM claims')
-      setClaims(rows) // Set the fetched claims to the state
+      setClaims(rows) 
     } catch (error) {
       console.error('Error fetching claims:', error)
     }
-  }
-
-  const handleAddClaim = () => {
-    navigation.navigate('AddClaim')
   }
 
   const handleViewClaim = (claimId) => {
     navigation.navigate('SingleClaim', { claimId })
   }
 
-  const handleEditClaim = (claimId) => {
-    navigation.navigate('EditClaim', { claimId })
-  }
-
-  const handleDeleteClaim = (claimId) => {
-    Alert.alert(
-      'Delete Claim',
-      'Are you sure you want to delete this claim?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Yes',
-          onPress: () => {
-            deleteClaim(claimId)
-          },
-        },
-      ],
-      { cancelable: true },
-    )
-  }
-  const deleteClaim = async (claimId) => {
-    try {
-      const db = await setupDatabase() // Wait for database setup to complete
-      const result = await db.runAsync('DELETE FROM claims WHERE id = ?', [
-        claimId,
-      ])
-      if (result.changes > 0) {
-        console.log('Claim deleted successfully')
-        fetchClaims() // Refresh claims after deletion
-      } else {
-        console.log('No claim found with ID:', claimId)
-      }
-    } catch (error) {
-      console.error('Error deleting claim:', error)
-    }
-  }
-
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+  const totalPages = Math.ceil(claims.length / itemsPerPage);
+// Get claims for current page
+const currentClaims = claims.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
   const handleLongPress = (claimId) => {
     if (isCheckboxMode) {
       // If checkbox mode is already active, reset the state
@@ -160,163 +127,175 @@ return () => {
       Alert.alert('Sharing not available', 'Unable to share file.');
     }
   };
-
-  const renderClaimItem = ({ item }) => (
-    <View style={styles.claimItemContainer}>
-      <View style={styles.claimItemContent}>
-        <TouchableOpacity
-          onLongPress={() => handleLongPress(item.id)}
-        >
-          <Text style={styles.claimTitle}>{item.application}</Text>
-        </TouchableOpacity>
-        {isCheckboxMode && (
-          <Checkbox
-            value={selectedClaims.has(item.id)}
-            onValueChange={() => handleCheckboxChange(item.id)}
-            style={styles.checkbox}
-          />
-        )}
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleEditClaim(item.id)}
-        >
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleViewClaim(item.id)}
-        >
-          <Text style={styles.buttonText}>View</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleDeleteClaim(item.id)}
-        >
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
+  const renderPagination = () => (
+    <View style={styles.paginationContainer}>
+      <TouchableOpacity
+        style={styles.paginationButton}
+        disabled={currentPage === 1}
+        onPress={() => handlePageChange(currentPage - 1)}
+      >
+        <Text style={styles.paginationText}>Previous</Text>
+      </TouchableOpacity>
+      <Text style={styles.pageIndicator}>{`${currentPage} / ${totalPages}`}</Text>
+      <TouchableOpacity
+        style={styles.paginationButton}
+        disabled={currentPage === totalPages}
+        onPress={() => handlePageChange(currentPage + 1)}
+      >
+        <Text style={styles.paginationText}>Next</Text>
+      </TouchableOpacity>
     </View>
   );
+  const renderClaimItem = ({ item }) => (
+    <View style={styles.claimItemWrapper}>
+    <View style={styles.claimRow}>
+      <Text style={styles.claimCell}>N000{item.id}</Text>
+      <Text style={styles.claimCell}>{item.claimId}</Text>
+      <Text style={styles.claimCell}>{item.segment}</Text>
+      <Text style={styles.claimCell}>{item.size}</Text>
+      <Text style={styles.claimCell}>{item.companyName}</Text>
+      <Text style={styles.claimCell}>{item.brandName}</Text>
+      {/* View Button Outside the Table */}
+      <TouchableOpacity style={styles.viewButton} onPress={() => handleViewClaim(item.id)}>
+        <AntDesign name="eye" size={18} color="white" />
+      </TouchableOpacity>
+    </View>
 
+    {isCheckboxMode && (
+      <Checkbox
+        value={selectedClaims.has(item.id)}
+        onValueChange={() => handleCheckboxChange(item.id)}
+        style={styles.checkbox}
+      />
+    )}
+  </View>
+  )
+  
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/apollo.jpg')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <TouchableOpacity style={styles.claimButton} onPress={handleAddClaim}>
-          <Text style={styles.buttonText}>Add Claim</Text>
-        </TouchableOpacity>
-        
-      </View>
-      <View style={styles.claimHeading}>
-        <Text style={styles.heading}>Claims</Text>
-        {isCheckboxMode && (
-          <TouchableOpacity style={styles.claimShare} onPress={handleShare}>
-            <Text style={styles.shareText}>Share Selected</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-     
-      <FlatList
-        data={claims}
-        renderItem={renderClaimItem}
-        keyExtractor={(item) => item.id.toString()}
-        extraData={claims}
-      />
-    </SafeAreaView>
-  )
-}
+    <View style={styles.header}></View>
+    <View style={styles.claimHeading}>
+      <Text style={styles.heading}>Scrap Analysis</Text>
+    </View>
+    
+    {isCheckboxMode && (
+      <TouchableOpacity style={styles.claimShare} onPress={handleShare}>
+        <Text style={styles.shareText}>Share Selected</Text>
+      </TouchableOpacity>
+    )}
+
+    {/* Column Headers */}
+    <View style={styles.tableHeader}>
+      <Text style={styles.headerCell}>Issue No.</Text>
+      <Text style={styles.headerCell}>Date</Text>
+      <Text style={styles.headerCell}>Seg.</Text>
+      <Text style={styles.headerCell}>Size</Text>
+      <Text style={styles.headerCell}>Comp</Text>
+      <Text style={styles.headerCell}>Brand</Text>
+      <Text style={styles.headerCell}></Text>
+    </View>
+
+    {/* Claim List */}
+    <FlatList
+      style={styles.claimItems}
+      data={currentClaims}  // Use currentClaims here
+      renderItem={renderClaimItem}
+      keyExtractor={(item) => item.id.toString()}
+      extraData={currentClaims}  // Ensure FlatList updates correctly
+    />
+    
+    {/* Pagination at the bottom */}
+    {renderPagination()}
+  </SafeAreaView>
+  );
+}  
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#F7F7F7',
     paddingTop: Platform.OS === 'android' ? 25 : 0,
+    padding: 5,
+    margin: 5,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'left',
   },
   claimHeading: {
-    padding: 10,
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
-  },
-  claimShare: {
-    backgroundColor: '#007BFF', // Blue background for the button
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 5,
-  },
-  shareText: {
-    color: '#FFF', // White text color
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    margin: 20,
-    flexDirection: 'column',
-  },
-  claimButton: {
-    backgroundColor: '#5C2C92',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    height: 40,
-    margin: 20,
-    marginTop: 40,
-  },
-  heading: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  claimItem: {
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
-  },
-  claimTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  claimItemContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    alignItems: 'left',
+    paddingHorizontal: 0,
+    marginBottom: 10,
   },
-  claimItemContent: {
-    flex: 1,
-  },
-  buttonContainer: {
+  tableHeader: {
     flexDirection: 'row',
+    backgroundColor: '#D9D9D9',
+    padding: 5,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    marginBottom: 5,
+    borderWidth: 1,
+    borderColor: '#C0C0C0',
   },
-  actionButton: {
-    marginLeft: 8,
-    padding: 8,
-    backgroundColor: '#007bff',
+  headerCell: {
+    flex: 1,
+    fontWeight: 'bold',
+    fontSize: 14,
+    textAlign: 'left',
+    paddingHorizontal: 5,
+    color: '#333',
+  },
+  claimItemWrapper: {
+    marginBottom: 10,
+  },
+  claimRow: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    borderRadius: 8,
+    alignItems: 'left',
+  },
+  claimCell: {
+    flex: 1,
+    fontSize: 14,
+    textAlign: 'left',
+    paddingHorizontal: 5,
+    color: '#333',
+  },
+  viewButton: {
+    backgroundColor: '#007BFF',
+    padding: 5,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  checkbox: {
+    marginLeft: 10,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  paginationButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
     borderRadius: 5,
   },
-  buttonText: {
-    color: '#fff',
+  paginationText: {
+    color: '#FFF',
     fontWeight: 'bold',
   },
-  claimTitle: {
+  pageIndicator: {
+    fontWeight: 'bold',
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#333',
   },
-})
+});
+
 export default AllClaim

@@ -2,18 +2,6 @@ import React, { useState } from 'react'
 import { SafeAreaView, View, Text, StyleSheet, TextInput } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
 
-const segmentData = [
-  { label: 'TBB', value: 'TBB' },
-  { label: 'TBR', value: 'TBR' },
-  { label: 'LTB', value: 'LTB' },
-  { label: 'LTR', value: 'LTR' },
-  { label: 'SCV', value: 'SCV' },
-  { label: 'PCR', value: 'PCR' },
-  { label: '2W', value: '2W' },
-  { label: 'T,rear', value: 'T_REAR' },
-  { label: 'T,front', value: 'T_FRONT' },
-  { label: 'OTR', value: 'OTR' },
-]
 const tyreSizeData = [
   { label: '7.00-15', value: '7.00-15' },
   { label: '7.00-16', value: '7.00-16' },
@@ -54,12 +42,44 @@ const plyRating = [
   { label: '20', value: '20' },
 ]
 
+const companyName =[
+  {label: 'Apollo' , value: 'Apollo'},
+  {label: 'MRF' , value: 'MRF'},
+  {label: 'JK', vlaue: 'JK'},
+  {label: 'CEAT', value: 'CEAT'},
+  {label: 'MAXXIS', value: 'MAXXIS'},
+  {label: 'Bridgestone', value: 'Bridgestone'},
+  {label: 'Goodyear', value: 'Goodyear'},
+  {label: 'Continental', value: 'Continental'},
+  {label: 'Others', value: 'Others'},
+]
+
+const createNsdData = () => {
+  const data = [];
+  for (let i = 0; i <= 50; i++) {
+    const label = i.toString();
+    const value = (i / 10).toFixed(1);
+    data.push({ label, value });
+  }
+  return data;
+};
+
+const nsdData = {
+  nsd1: createNsdData(),
+  nsd2: createNsdData(),
+  nsd3: createNsdData(),
+};
 const Form1 = ({ formData, onChange }) => {
   const [isFocus, setIsFocus] = useState({
     segment: false,
     tyreSize: false,
     plyRating: false,
   })
+  const [focusState, setFocusState] = useState({
+    nsd1: false,
+    nsd2: false,
+    nsd3: false,
+  });
 
   const handleFocus = (field) => {
     setIsFocus((prev) => ({ ...prev, [field]: true }))
@@ -76,33 +96,6 @@ const Form1 = ({ formData, onChange }) => {
   return (
     <SafeAreaView style={styles.container}>
     <View>
-      <Text style={styles.inputLabel}>Segment</Text>
-      <Dropdown
-        style={[styles.dropdown, isFocus.segment && { borderColor: 'blue' }]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        data={segmentData}
-        search
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder={!isFocus.segment ? 'Select item' : '...'}
-        searchPlaceholder="Search..."
-        value={formData.segment}
-        onFocus={() => handleFocus('segment')}
-        onBlur={() => handleBlur('segment')}
-        onChange={(item) => handleChange('segment', item.value)}
-      />
-
-      <Text style={styles.inputLabel}>Application</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => handleChange('application', text)}
-        placeholder="Enter Application Name"
-        value={formData.application}
-      />
-
       <Text style={styles.inputLabel}>Tyre Size</Text>
       <Dropdown
         style={[styles.dropdown, isFocus.tyreSize && { borderColor: 'blue' }]}
@@ -140,15 +133,24 @@ const Form1 = ({ formData, onChange }) => {
         onBlur={() => handleBlur('plyRating')}
         onChange={(item) => handleChange('plyRating', item.value)}
       />
-
       <Text style={styles.inputLabel}>Company Name</Text>
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => handleChange('companyName', text)}
-        placeholder="Enter Company Name"
+      <Dropdown
+        style={[styles.dropdown, isFocus.companyName && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={companyName}
+        search
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus.plyRating ? 'Select item' : '...'}
+        searchPlaceholder="Search..."
         value={formData.companyName}
+        onFocus={() => handleFocus('companyName')}
+        onBlur={() => handleBlur('companyName')}
+        onChange={(item) => handleChange('companyName', item.value)}
       />
-
       <Text style={styles.inputLabel}>Brand Name</Text>
       <TextInput
         style={styles.input}
@@ -156,6 +158,43 @@ const Form1 = ({ formData, onChange }) => {
         placeholder="Enter Brand Name"
         value={formData.brandName}
       />
+      <Text style={styles.inputLabel}>Serial Number</Text>
+    <TextInput
+          style={styles.input}
+          onChangeText={(text) => onChange('serialNumber', text)}
+          placeholder="Enter Serial Number"
+          value={formData.serialNumber}
+        />
+        <Text style={styles.inputLabel}>Mould No.</Text>
+        <TextInput
+          style={styles.input}
+          onChangeText={(text) => onChange('mouldNo', text)}
+          placeholder="Enter Mould No."
+          value={formData.mouldNo}
+        />
+     {Object.keys(nsdData).map((field) => (
+          <View key={field}>
+            <Text style={styles.inputLabel}>{field.toUpperCase()}</Text>
+            <Dropdown
+              style={[styles.dropdown, focusState[field] && { borderColor: 'blue' }]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              data={nsdData[field]} // Access data from the object
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
+              placeholder={!focusState[field] ? 'Select item' : '...'}
+              searchPlaceholder="Search..."
+              value={formData[field]}
+              onFocus={() => handleFocus(field)}
+              onBlur={() => handleBlur(field)}
+              onChange={(item) => handleChange(field, item.value)}
+            />
+          </View>
+        ))}
+
     </View>
   </SafeAreaView>
 )

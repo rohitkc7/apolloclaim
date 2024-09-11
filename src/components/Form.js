@@ -1,12 +1,37 @@
 import React, { useState } from 'react'
 import { SafeAreaView, View, Text, StyleSheet, TextInput } from 'react-native'
-
-
+import { Dropdown } from 'react-native-element-dropdown'
+const segmentData = [
+  { label: 'TBB', value: 'TBB' },
+  { label: 'TBR', value: 'TBR' },
+  { label: 'LTB', value: 'LTB' },
+  { label: 'LTR', value: 'LTR' },
+  { label: 'SCV', value: 'SCV' },
+  { label: 'PCR', value: 'PCR' },
+  { label: '2W', value: '2W' },
+  { label: 'T,rear', value: 'T_REAR' },
+  { label: 'T,front', value: 'T_FRONT' },
+  { label: 'OTR', value: 'OTR' },
+]
 const Form = ({ formData, onChange }) => {
+  const [isFocus, setIsFocus] = useState({
+    segment: false,
+    tyreSize: false,
+    plyRating: false,
+  })
+
+  const handleFocus = (field) => {
+    setIsFocus((prev) => ({ ...prev, [field]: true }))
+  }
+
+  const handleBlur = (field) => {
+    setIsFocus((prev) => ({ ...prev, [field]: false }))
+  }
+
+
   const handleChange = (field, value) => {
     onChange(field, value)
   }
-
   return (
     <SafeAreaView style={styles.container}>
     <View>
@@ -17,13 +42,38 @@ const Form = ({ formData, onChange }) => {
         placeholder="Enter Location"
         value={formData.location}
       />
-
       <Text style={styles.inputLabel}>CustomerName</Text>
       <TextInput
         style={styles.input}
         onChangeText={(text) => handleChange('customerName', text)}
         placeholder="Enter Customer Name"
         value={formData.customerName}
+      />
+       <Text style={styles.inputLabel}>Segment</Text>
+      <Dropdown
+        style={[styles.dropdown, isFocus.segment && { borderColor: 'blue' }]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={segmentData}
+        search
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={!isFocus.segment ? 'Select item' : '...'}
+        searchPlaceholder="Search..."
+        value={formData.segment}
+        onFocus={() => handleFocus('segment')}
+        onBlur={() => handleBlur('segment')}
+        onChange={(item) => handleChange('segment', item.value)}
+      />
+
+      <Text style={styles.inputLabel}>Application</Text>
+      <TextInput
+        style={styles.input}
+        onChangeText={(text) => handleChange('application', text)}
+        placeholder="Enter Application Name"
+        value={formData.application}
       />
     </View>
   </SafeAreaView>
