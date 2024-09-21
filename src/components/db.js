@@ -1,8 +1,11 @@
 import * as SQLite from 'expo-sqlite'
 
 const setupDatabase = async () => {
-  const db = await SQLite.openDatabaseAsync('databaseName', {useNewConnection:true})
- 
+  const db = await SQLite.openDatabaseAsync('databaseName', {
+    useNewConnection: true,
+  })
+
+  // Create a new table with the dateSubmitted column
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS claims (
@@ -23,9 +26,11 @@ const setupDatabase = async () => {
       pattern TEXT,
       defectArea TEXT,
       defectName TEXT,
-      photos TEXT
+      photos TEXT,
+      dateSubmitted TEXT -- New column for storing the submission date
     );
   `)
+
   return db
 }
 

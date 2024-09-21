@@ -24,10 +24,9 @@ const insertClaim = async (formData) => {
     } = formData
 
     const photosString = JSON.stringify(photos)
+    const dateSubmitted = new Date().toISOString() // Get the current date in ISO format
 
-    console.log(
-      'Inserting claim with following data:', formData
-    )
+    console.log('Inserting claim with following data:', formData)
     const result = await db.runAsync(
       `
       INSERT INTO claims (
@@ -47,9 +46,10 @@ const insertClaim = async (formData) => {
         pattern,
         defectArea,
         defectName,
-        photos
+        photos,
+        dateSubmitted
       )
-      VALUES (? , ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
+      VALUES (? , ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,? )
       `,
       [
         location,
@@ -69,6 +69,7 @@ const insertClaim = async (formData) => {
         defectArea,
         defectName,
         photosString,
+        dateSubmitted,
       ],
     )
 
@@ -76,10 +77,10 @@ const insertClaim = async (formData) => {
     return result.lastInsertRowId
   } catch (error) {
     console.error('Failed to save claim:', error)
-    throw error 
+    throw error
   }
 }
- const updateClaim = async (claimId, formData) => {
+const updateClaim = async (claimId, formData) => {
   try {
     const db = await setupDatabase()
     const {
@@ -137,6 +138,5 @@ const insertClaim = async (formData) => {
     throw error
   }
 }
-
 
 export { insertClaim, updateClaim }

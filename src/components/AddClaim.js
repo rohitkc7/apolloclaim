@@ -12,17 +12,19 @@ import Form1 from './Form1'
 import Form2 from './Form2'
 import Form3 from './Form3'
 import { insertClaim } from './databaseOperation'
+import { useFocusEffect } from '@react-navigation/native'
+import Toast from 'react-native-toast-message'
 
 const initialFormData = {
-  location:'',
-  customerName:'',
+  location: '',
+  customerName: '',
   segment: '',
   application: '',
   tyreSize: '',
   plyRating: '',
   brandName: '',
   companyName: '',
-  serialNumber:'',
+  serialNumber: '',
   mouldNo: '',
   nsd1: '',
   nsd2: '',
@@ -31,75 +33,97 @@ const initialFormData = {
   defectArea: '',
   defectName: '',
   photos: [],
-};
+  dateSubmitted: '', // Add this line to initialize the dateSubmitted field
+}
 
 const AddClaim = ({ navigation }) => {
-  const [formData, setFormData] = useState(initialFormData);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [formData, setFormData] = useState(initialFormData)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
-    resetForm();
-  }, []);
+    resetForm()
+  }, [])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      resetForm()
+    }, []),
+  )
 
   const resetForm = () => {
-    setFormData(initialFormData);
-    setCurrentPage(1);
-  };
+    setFormData(initialFormData)
+    setCurrentPage(1)
+  }
 
   const handleFormChange = (fieldName, value) => {
-    setFormData((prevData) => ({ ...prevData, [fieldName]: value }));
-  };
+    setFormData((prevData) => ({ ...prevData, [fieldName]: value }))
+  }
 
   const handlePhotoSelection = (photoBase64) => {
     setFormData((prevState) => ({
       ...prevState,
       photos: [...prevState.photos, photoBase64],
-    }));
-  };
+    }))
+  }
 
   const submitData = async () => {
     try {
-      console.log('Form Data:', formData);
-      const insertId = await insertClaim(formData);
-      setFormData(initialFormData);
-      navigation.navigate('HomeApollo');
+      const dateSubmitted = new Date().toISOString() // ISO string format
+      const updatedFormData = { ...formData, dateSubmitted }
+
+      console.log('Form Data:', updatedFormData)
+
+      const insertId = await insertClaim(updatedFormData)
+
+      setFormData(initialFormData)
+      Toast.show({
+        text1: 'Success',
+        text2: 'Claim saved successfully!',
+        type: 'success',
+      })
+      setTimeout(() => {
+        navigation.navigate('HomeApollo')
+      }, 2000)
     } catch (error) {
-      console.error('Failed to save:', error);
+      console.error('Failed to save:', error)
     }
-  };
+  }
+
   const renderFormTitle = () => {
     switch (currentPage) {
       case 1:
-        return "Customer and Application Details";
+        return 'Customer and Application Details'
       case 2:
-        return "Tyre Details";
-      case 3: 
-        return "Complaint Detail and Pictures";
-      case 4:  
-        return "Preview and Submit";
-      default: "Fill the details to add new Claim"
+        return 'Tyre Details'
+      case 3:
+        return 'Complaint Detail and Pictures'
+      case 4:
+        return 'Preview and Submit'
+      default:
+        'Fill the details to add new Claim'
     }
   }
 
   const renderForm = () => {
     switch (currentPage) {
       case 1:
-        return <Form formData={formData} onChange={handleFormChange}/>;
+        return <Form formData={formData} onChange={handleFormChange} />
       case 2:
-        return <Form1 formData={formData} onChange={handleFormChange} />;
+        return <Form1 formData={formData} onChange={handleFormChange} />
       case 3:
-        return <Form2 formData={formData} onChange={handleFormChange}  onPhotoSelect={handlePhotoSelection}/>;
-      case 4:
         return (
-          <Form3
+          <Form2
             formData={formData}
             onChange={handleFormChange}
+            onPhotoSelect={handlePhotoSelection}
           />
-        );
+        )
+      case 4:
+        return <Form3 formData={formData} onChange={handleFormChange} />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -111,10 +135,18 @@ const AddClaim = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.nextButton}
-            onPress={currentPage === 4 ? submitData : () => setCurrentPage((prev) => Math.min(prev + 1, 4))}
+            onPress={
+              currentPage === 4
+                ? submitData
+                : () => setCurrentPage((prev) => Math.min(prev + 1, 4))
+            }
           >
             <Text style={styles.buttonText}>
-              {currentPage === 4 ? 'Submit' : currentPage === 3 ? 'Preview' : 'Next'}
+              {currentPage === 4
+                ? 'Submit'
+                : currentPage === 3
+                  ? 'Preview'
+                  : 'Next'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -127,8 +159,8 @@ const AddClaim = ({ navigation }) => {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-};
+  )
+}
 const styles = StyleSheet.create({
   container: {},
   titleText: {

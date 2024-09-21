@@ -16,117 +16,559 @@ import { Camera, CameraType } from 'expo-camera/legacy'
 import * as FileSystem from 'expo-file-system'
 
 const patternData = [
-  { label: 'RIB', value: 'rib' },
-  { label: 'Steer', value: 'steer' },
-  { label: 'LUG', value: 'lug' },
-  { label: 'Semilug', value: 'semilug' },
-  { label: 'Block', value: 'block' },
+  { label: 'RIB', value: 'RIB' },
+  { label: 'Steer', value: 'STEER' },
+  { label: 'LUG', value: 'LUG' },
+  { label: 'Semilug', value: 'Semilug' },
+  { label: 'Block', value: 'Block' },
 ]
 
 const defectAreaData = [
-  { label: 'SIDEWALL', value: 'sidewall' },
-  { label: 'BEAD', value: 'bead' },
-  { label: 'TREAD', value: 'tread' },
-  { label: 'INTERIOR', value: 'interior' },
+  { label: 'SIDEWALL', value: 'SIDEWALL' },
+  { label: 'BEAD', value: 'BEAD' },
+  { label: 'TREAD', value: 'TREAD' },
+  { label: 'INTERIOR', value: 'INTERIOR' },
 ]
 
 const defectNameData = [
-  { label: 'Sidewall Impact', value: 'sidewall-impact' },
-  { label: 'Rim damage (Non lock ring side - Bead Area)', value: 'rim-damage' },
-  { label: 'Broken bead', value: 'broken-bead' },
-  { label: 'Tread through cut / Subsequent burst', value: 'tread-through-cut' },
-  { label: 'Deflation damage', value: 'deflation-damage' },
+  // BEAD Defects
+  {
+    label: 'Distorted bead / Deformed bead / Bead hang up',
+    value: 'Distorted bead / Deformed bead / Bead hang up',
+    defectArea: 'BEAD',
+  },
+  {
+    label: 'Lockring damage (Bead Area)',
+    value: 'Lockring damage (Bead Area)',
+    defectArea: 'BEAD',
+  },
   {
     label: 'Mounting/Demounting damage (Bead Area)',
-    value: 'mounting-demounting-damage',
+    value: 'Mounting/Demounting damage (Bead Area)',
+    defectArea: 'BEAD',
   },
   {
-    label: 'Sidewall Bulge due to Impact /Injury',
-    value: 'sidewall-bulge-impact',
+    label: 'Rim damage (Non lock ring side - Bead Area)',
+    value: 'Rim damage (Non lock ring side - Bead Area)',
+    defectArea: 'BEAD',
   },
-  { label: 'Tread impact', value: 'tread-impact' },
-  { label: 'Sidewall through cut', value: 'sidewall-through-cut' },
   {
-    label: 'Tread Shoulder Bulge / Subsequent Burst',
-    value: 'tread-shoulder-bulge',
+    label: 'Poor bead repair / finish',
+    value: 'Poor bead repair / finish',
+    defectArea: 'BEAD',
   },
-  { label: 'Sidewall Scoring / Dual touching', value: 'sidewall-scoring' },
-  { label: 'Bead Bulge / Burst', value: 'bead-bulge-burst' },
-  { label: 'Sidewall Bulge', value: 'sidewall-bulge' },
-  { label: 'Breaker / Belt Bulge', value: 'breaker-belt-bulge' },
-  { label: 'Turn-up bulge / Crack', value: 'turn-up-bulge-crack' },
-  { label: 'Casing Unwrap', value: 'casing-unwrap' },
-  { label: 'Lockring damage (Bead Area)', value: 'lockring-damage' },
+  { label: 'Leaking at bead', value: 'Leaking at bead', defectArea: 'BEAD' },
   {
-    label: 'Circumferential crack at shoulder / SWOT',
-    value: 'circumferential-crack-shoulder',
+    label: 'Chemical damage on bead',
+    value: 'Chemical damage on bead',
+    defectArea: 'BEAD',
   },
-  { label: 'Tread / Crown bulge', value: 'tread-crown-bulge' },
-  { label: 'Loose / Wild bead wire', value: 'loose-wild-bead-wire' },
-  { label: 'Innerliner bulge', value: 'innerliner-bulge' },
   {
-    label: 'Foreign material cured in interior',
-    value: 'foreign-material-cured',
+    label: 'Chunks missing in bead',
+    value: 'Chunks missing in bead',
+    defectArea: 'BEAD',
   },
-  { label: 'Chafer bulge/ Sepearation', value: 'chafer-bulge-separation' },
-  { label: 'Rim digging (Bead Area)', value: 'rim-digging' },
-  { label: 'Burnt bead', value: 'burnt-bead' },
   {
-    label: 'Sidewall bulge - PCR (open carcass splice)',
-    value: 'sidewall-bulge-pcr',
+    label: 'Bead damaged in transit',
+    value: 'Bead damaged in transit',
+    defectArea: 'BEAD',
   },
-  { label: 'Loose cords in innerliner', value: 'loose-cords-innerliner' },
+  { label: 'Burnt bead', value: 'Burnt bead', defectArea: 'BEAD' },
+  { label: 'Discoloured bead', value: 'Discoloured bead', defectArea: 'BEAD' },
   {
-    label: 'Open / Leakage / Pinch splice in Tube',
-    value: 'open-leakage-pinch-splice-tube',
+    label: 'Collapsed / Buckled beads',
+    value: 'Collapsed / Buckled beads',
+    defectArea: 'BEAD',
   },
-  { label: 'Rat bitten Tube', value: 'rat-bitten-tube' },
+  { label: 'Kinked bead', value: 'Kinked bead', defectArea: 'BEAD' },
+  {
+    label: 'Bead Bulge / Burst',
+    value: 'Bead Bulge / Burst',
+    defectArea: 'BEAD',
+  },
+  { label: 'Chafer bulge', value: 'Chafer bulge', defectArea: 'BEAD' },
+  { label: 'Casing Unwrap', value: 'Casing Unwrap', defectArea: 'BEAD' },
+  {
+    label: 'Ozone cracks in bead area',
+    value: 'Ozone cracks in bead area',
+    defectArea: 'BEAD',
+  },
+  {
+    label: 'Cords visible in bead area',
+    value: 'Cords visible in bead area',
+    defectArea: 'BEAD',
+  },
+  {
+    label: 'Rim digging (Bead Area)',
+    value: 'Rim digging (Bead Area)',
+    defectArea: 'BEAD',
+  },
+  {
+    label: 'Incorrect bead seating',
+    value: 'Incorrect bead seating',
+    defectArea: 'BEAD',
+  },
+  { label: 'Broken bead', value: 'Broken bead', defectArea: 'BEAD' },
+  {
+    label: 'Poor bead toe trimming',
+    value: 'Poor bead toe trimming',
+    defectArea: 'BEAD',
+  },
+  { label: 'Blisters on bead', value: 'Blisters on bead', defectArea: 'BEAD' },
+  { label: 'Undercured bead', value: 'Undercured bead', defectArea: 'BEAD' },
+  {
+    label: 'Foreign material cured in bead',
+    value: 'Foreign material cured in bead',
+    defectArea: 'BEAD',
+  },
+  {
+    label: 'Flow crack in bead',
+    value: 'Flow crack in bead',
+    defectArea: 'BEAD',
+  },
+  { label: 'Open bead splice', value: 'Open bead splice', defectArea: 'BEAD' },
+  {
+    label: 'Loose / Wild bead wire',
+    value: 'Loose / Wild bead wire',
+    defectArea: 'BEAD',
+  },
+
+  // INTERIOR Defects
+  { label: 'Crown buckle', value: 'Crown buckle', defectArea: 'INTERIOR' },
+  {
+    label: 'Innerliner break',
+    value: 'Innerliner break',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Innerliner bulge',
+    value: 'Innerliner bulge',
+    defectArea: 'INTERIOR',
+  },
   {
     label: 'Ply bulge at shoulder (Interior) /Burst',
-    value: 'ply-bulge-shoulder-interior',
+    value: 'Ply bulge at shoulder (Interior) /Burst',
+    defectArea: 'INTERIOR',
   },
   {
-    label: 'Neglected Tread Cut (Non Through)',
-    value: 'neglected-tread-cut-non-through',
+    label: 'Carcass / Inner Ply bulge',
+    value: 'Carcass / Inner Ply bulge',
+    defectArea: 'INTERIOR',
   },
   {
-    label: 'Sidewall throughvented (Pinhole)',
-    value: 'sidewall-throughvented',
+    label: 'Open innerliner splice',
+    value: 'Open innerliner splice',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Cracks in innerliner',
+    value: 'Cracks in innerliner',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Broken/Pulled cords',
+    value: 'Broken/Pulled cords',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Damaged innerliner by gaiter usage',
+    value: 'Damaged innerliner by gaiter usage',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Damaged innerliner (fitting failure)',
+    value: 'Damaged innerliner (fitting failure)',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Poor Innerliner repair / finish',
+    value: 'Poor Innerliner repair / finish',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Innerliner Damaged in transit',
+    value: 'Innerliner Damaged in transit',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Casing destroyed / Run Flat',
+    value: 'Casing destroyed / Run Flat',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Lumps in innerliner',
+    value: 'Lumps in innerliner',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Blisters on innerliner',
+    value: 'Blisters on innerliner',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Heavy liner/Cords splice/Thick innerliner splice',
+    value: 'Heavy liner/Cords splice/Thick innerliner splice',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Folds in carcass / Wrinkled plies in innerliner',
+    value: 'Folds in carcass / Wrinkled plies in innerliner',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Foreign material cured in interior',
+    value: 'Foreign material cured in interior',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Flow crack in innerliner',
+    value: 'Flow crack in innerliner',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'CBU at shoulder area',
+    value: 'CBU at shoulder area',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Loose cords in innerliner',
+    value: 'Loose cords in innerliner',
+    defectArea: 'INTERIOR',
+  },
+  {
+    label: 'Irregular cord spacing/Spread cords in innerliner',
+    value: 'Irregular cord spacing/Spread cords in innerliner',
+    defectArea: 'INTERIOR',
+  },
+
+  // SIDEWALL Defects
+  {
+    label: 'Sidewall Bulge due to Impact /Injury',
+    value: 'Sidewall Bulge due to Impact /Injury',
+    defectArea: 'SIDEWALL',
+  },
+  { label: 'Pencil bulge', value: 'Pencil bulge', defectArea: 'SIDEWALL' },
+  {
+    label: 'Sidewall bulge due to undulation',
+    value: 'Sidewall bulge due to undulation',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Turn-up bulge / Crack',
+    value: 'Turn-up bulge / Crack',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Open sidewall splice',
+    value: 'Open sidewall splice',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall Cracks / Radial Cracks',
+    value: 'Sidewall Cracks / Radial Cracks',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Ozone cracks in sidewall',
+    value: 'Ozone cracks in sidewall',
+    defectArea: 'SIDEWALL',
   },
   {
     label: 'Crack near rim cushion / Rim Line Crack',
-    value: 'crack-near-rim-cushion',
+    value: 'Crack near rim cushion / Rim Line Crack',
+    defectArea: 'SIDEWALL',
   },
   {
-    label: 'Mold Fold / Buckled / Wrinkled Material (Tube)',
-    value: 'mold-fold-buckled-wrinkled-tube',
+    label: 'Cords visible in sidewall',
+    value: 'Cords visible in sidewall',
+    defectArea: 'SIDEWALL',
   },
-  { label: 'Blisters in sidewall', value: 'blisters-in-sidewall' },
+  {
+    label: 'Sidewall Impact',
+    value: 'Sidewall Impact',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Circumferential total breakthrough (Zipper)',
+    value: 'Circumferential total breakthrough (Zipper)',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall through cut',
+    value: 'Sidewall through cut',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Chain damage / Scuff Marks on Sidewall',
+    value: 'Chain damage / Scuff Marks on Sidewall',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall Scoring / Dual touching',
+    value: 'Sidewall Scoring / Dual touching',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Poor repair / finish in sidewall',
+    value: 'Poor repair / finish in sidewall',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall throughvented (Pinhole)',
+    value: 'Sidewall throughvented (Pinhole)',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall  penetration',
+    value: 'Sidewall penetration',
+    defectArea: 'SIDEWALL',
+  },
+
+  {
+    label: 'Chemical damage on sidewall',
+    value: 'Chemical damage on sidewall',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Cuts and snags in sidewall',
+    value: 'Cuts and snags in sidewall',
+    defectArea: 'SIDEWALL',
+  },
   {
     label: 'Sidewall damaged in transit',
-    value: 'sidewall-damaged-in-transit',
-  },
-  { label: 'Flow crack in sidewall', value: 'flow-crack-sidewall' },
-  {
-    label: 'Pin Holes / Micro Holes (Tube)',
-    value: 'pin-holes-micro-holes-tube',
+    value: 'Sidewall damaged in transit',
+    defectArea: 'SIDEWALL',
   },
   {
-    label: 'Tyre failure  caused by complaint in tube',
-    value: 'tyre-failure-caused-by-complaint-in-tube',
+    label: 'Casing destroyed / Run Flat',
+    value: 'Casing destroyed / Run Flat',
+    defectArea: 'SIDEWALL',
   },
   {
-    label: 'Sidewall bulge due to undulation',
-    value: 'sidewall-bulge-due-to-undulation',
+    label: 'Deflation damage',
+    value: 'Deflation damage',
+    defectArea: 'SIDEWALL',
   },
   {
-    label: 'Valve shaft out of base (Metal to Rubber)',
-    value: 'valve-shaft-out-of-base',
+    label: 'Blisters in sidewall',
+    value: 'Blisters in sidewall',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall undulation / heavy splice',
+    value: 'Sidewall undulation / heavy splice',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Sidewall bulge - PCR (open carcass splice)',
+    value: 'Sidewall bulge - PCR (open carcass splice)',
+    defectArea: 'SIDEWALL',
+  },
+  { label: 'Sidewall Bulge', value: 'Sidewall Bulge', defectArea: 'SIDEWALL' },
+  {
+    label: 'Foreign material cured in sidewall',
+    value: 'Foreign material cured in sidewall',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Flow crack in sidewall',
+    value: 'Flow crack in sidewall',
+    defectArea: 'SIDEWALL',
+  },
+  {
+    label: 'Loose wire in sidewall',
+    value: 'Loose wire in sidewall',
+    defectArea: 'SIDEWALL',
+  },
+
+  {
+    label: 'Tread Delamination',
+    value: 'Tread Delamination',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Stone trapping / drilling',
+    value: 'Stone trapping / drilling',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Tread chipping & chunking',
+    value: 'Tread chipping & chunking',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Abrasive flakey wear',
+    value: 'Abrasive flakey wear',
+    defectArea: 'TREAD',
+  },
+  { label: 'Stubble damage', value: 'Stubble damage', defectArea: 'TREAD' },
+  { label: 'Spinning', value: 'Spinning', defectArea: 'TREAD' },
+  {
+    label: 'Neglected Tread Cut – Bulge (Non Through)',
+    value: 'Neglected Tread Cut – Bulge (Non Through)',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Tread parts / Lugs torn out / Chunking',
+    value: 'Tread parts / Lugs torn out / Chunking',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Neglected Tread Cut (Non Through)',
+    value: 'Neglected Tread Cut (Non Through)',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Shoulder rib tearing',
+    value: 'Shoulder rib tearing',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Tread Damaged in Transit',
+    value: 'Tread Damaged in Transit',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Heel and toe wear',
+    value: 'Heel and toe wear',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Alternated lug / Block Wear',
+    value: 'Alternated lug / Block Wear',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Cupping / Scalloped Wear',
+    value: 'Cupping / Scalloped Wear',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Irregular Wear - Rib sinking',
+    value: 'Irregular Wear - Rib sinking',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Irregular Wear - River wear',
+    value: 'Irregular Wear - River wear',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Irregular Wear - Feathered wear',
+    value: 'Irregular Wear - Feathered wear',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Irregular Wear - Diagonal Wear',
+    value: 'Irregular Wear - Diagonal Wear',
+    defectArea: 'TREAD',
+  },
+  { label: 'Irregular wear', value: 'Irregular wear', defectArea: 'TREAD' },
+  { label: 'Flat spotting', value: 'Flat spotting', defectArea: 'TREAD' },
+  {
+    label: 'Poor repair/ finish on tread',
+    value: 'Poor repair/ finish on tread',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Tread throughvented (Pinhole)',
+    value: 'Tread throughvented (Pinhole)',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Chemical damage on tread',
+    value: 'Chemical damage on tread',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Ozone cracks on tread surface',
+    value: 'Ozone cracks on tread surface',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Circumferential crack at shoulder / SWOT',
+    value: 'Circumferential crack at shoulder / SWOT',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Cords visible in tread',
+    value: 'Cords visible in tread',
+    defectArea: 'TREAD',
+  },
+  { label: 'Tread impact', value: 'Tread impact', defectArea: 'TREAD' },
+  {
+    label: 'Tread through cut / Subsequent burst',
+    value: 'Tread through cut / Subsequent burst',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Scoring on tread area',
+    value: 'Scoring on tread area',
+    defectArea: 'TREAD',
+  },
+  { label: 'Centre wear', value: 'Centre wear', defectArea: 'TREAD' },
+  {
+    label: 'Shoulder Wear – Shoulder Scrubbing / Scuffing',
+    value: 'Shoulder Wear – Shoulder Scrubbing / Scuffing',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Tread / Crown bulge',
+    value: 'Tread / Crown bulge',
+    defectArea: 'TREAD',
+  },
+  { label: 'Belt edge bulge', value: 'Belt edge bulge', defectArea: 'TREAD' },
+  {
+    label: 'Tread Shoulder Bulge / Subsequent Burst',
+    value: 'Tread Shoulder Bulge / Subsequent Burst',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Breaker / Belt Bulge',
+    value: 'Breaker / Belt Bulge',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Open tread splice',
+    value: 'Open tread splice',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Groove / Block / Lug base cracking',
+    value: 'Groove / Block / Lug base cracking',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Blisters on tread',
+    value: 'Blisters on tread',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Heavy/Thick tread splice',
+    value: 'Heavy/Thick tread splice',
+    defectArea: 'TREAD',
+  },
+  { label: 'Outer ply bulge', value: 'Outer ply bulge', defectArea: 'TREAD' },
+  {
+    label: 'Foreign material cured in tread',
+    value: 'Foreign material cured in tread',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Flow crack on tread',
+    value: 'Flow crack on tread',
+    defectArea: 'TREAD',
+  },
+  {
+    label: 'Loose / Wild wire in tread',
+    value: 'Loose / Wild wire in tread',
+    defectArea: 'TREAD',
   },
 ]
+
 const DropdownField = ({ label, data, value, onChange }) => {
-  const [isFocus, setIsFocus] = useState(false);
-  
+  const [isFocus, setIsFocus] = useState(false)
+
   return (
     <>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -148,13 +590,14 @@ const DropdownField = ({ label, data, value, onChange }) => {
         onChange={(item) => onChange(item.value)}
       />
     </>
-  );
-};
+  )
+}
 const Form3 = ({ formData, onChange, onPic1Change }) => {
   const [showCamera, setShowCamera] = useState(false)
   const [type, setType] = useState(CameraType.back)
   const [permission, requestPermission] = Camera.useCameraPermissions()
   const [photos, setPhotos] = useState(formData.photos || [])
+  const [filteredDefectNames, setFilteredDefectNames] = useState([])
 
   if (!permission) {
     return <View />
@@ -199,26 +642,39 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
 
   let cameraRef
 
+  // Update the filtered defect names when the defect area changes
+  const handleDefectAreaChange = (value) => {
+    onChange('defectArea', value)
+
+    // Filter defectNameData based on the selected defectArea
+    const filteredNames = defectNameData.filter(
+      (defect) => defect.defectArea === value,
+    )
+    setFilteredDefectNames(filteredNames)
+
+    // Clear the defectName field when defectArea is changed
+    onChange('defectName', '')
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View>
-      <DropdownField 
-          label="Pattern" 
-          data={patternData} 
-          value={formData.pattern} 
-          onChange={(value) => onChange('pattern', value)} 
+        <DropdownField
+          label="Pattern"
+          data={patternData}
+          value={formData.pattern}
+          onChange={(value) => onChange('pattern', value)}
         />
-        <DropdownField 
-          label="Defect Area" 
-          data={defectAreaData} 
-          value={formData.defectArea} 
-          onChange={(value) => onChange('defectArea', value)} 
+        <DropdownField
+          label="Defect Area"
+          data={defectAreaData}
+          value={formData.defectArea}
+          onChange={handleDefectAreaChange}
         />
-        <DropdownField 
-          label="Defect Name" 
-          data={defectNameData} 
-          value={formData.defectName} 
-          onChange={(value) => onChange('defectName', value)} 
+        <DropdownField
+          label="Defect Name"
+          data={filteredDefectNames}
+          value={formData.defectName}
+          onChange={(value) => onChange('defectName', value)}
         />
       </View>
       <View style={styles.cameraContainer}>

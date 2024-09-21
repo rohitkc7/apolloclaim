@@ -1,9 +1,7 @@
 {
   "expo": {
     "name": "ApolloClaim",
-    "plugins": [
-      "expo-font"
-    ],
+    "plugins": ["expo-font"],
     "slug": "ApolloClaim",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
