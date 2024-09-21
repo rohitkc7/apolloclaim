@@ -2,7 +2,9 @@
   "expo": {
     "name": "ApolloClaim",
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "slug": "ApolloClaim",
     "version": "1.0.0",
@@ -14,9 +16,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -31,6 +31,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.rohitkc7.ApolloClaim",
+      "googleServicesFile": "./android/app/google-services.json",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
