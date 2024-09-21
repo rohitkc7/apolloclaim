@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "267318011259",
+    "project_id": "apolloclaim-afdda",
+    "storage_bucket": "apolloclaim-afdda.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:267318011259:android:eeb2a7e73dd67275f589de",
+        "android_client_info": {
+          "package_name": "com.rohitkc7.ApolloClaim"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "267318011259-colt5g4d3jk9v2gdea0gg5pkbdbsv63j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rohitkc7.ApolloClaim",
+            "certificate_hash": "d21bd8ffdd3d7d47db329ff1937754d06226e36c"
+          }
+        },
+        {
+          "client_id": "267318011259-vo4dn5tn7anlad7cm6tco0fp306s0ij1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC97ngOapG38bbZ2uwsF4NNk967bxgYAAY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "267318011259-vo4dn5tn7anlad7cm6tco0fp306s0ij1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
