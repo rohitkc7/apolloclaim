@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native'
-import auth from '@react-native-firebase/auth'
+import { auth } from '../../firebaseConfig'
+import { createUserWithEmailAndPassword } from 'firebase/auth' // Import the function correctly
 
 const TestFirebase = () => {
   const [email, setEmail] = useState('')
@@ -9,7 +10,7 @@ const TestFirebase = () => {
 
   const handleCreateUser = async () => {
     try {
-      await auth().createUserWithEmailAndPassword(email, password)
+      await createUserWithEmailAndPassword(auth, email, password) // Correct way to call
       setMessage('User created successfully!')
     } catch (error) {
       setMessage(`Error: ${error.message}`)

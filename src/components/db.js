@@ -1,8 +1,10 @@
 import * as SQLite from 'expo-sqlite'
 
 const setupDatabase = async () => {
-  const db = await SQLite.openDatabaseAsync('databaseName', {useNewConnection:true})
- 
+  const db = await SQLite.openDatabaseAsync('databaseName', {
+    useNewConnection: true,
+  })
+
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS claims (
