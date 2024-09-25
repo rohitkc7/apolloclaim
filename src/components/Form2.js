@@ -164,7 +164,7 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
             style={styles.fullScreenCamera}
             type={type}
             ratio="4:3"
-            zoom={2}
+            zoom={0}
             ref={(ref) => {
               cameraRef = ref
             }}

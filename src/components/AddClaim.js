@@ -14,6 +14,7 @@ import Form3 from './Form3'
 import { insertClaim } from './databaseOperation'
 import { useFocusEffect } from '@react-navigation/native'
 import Toast from 'react-native-toast-message'
+import * as MediaLibrary from 'expo-media-library'
 
 const initialFormData = {
   location: '',
@@ -73,19 +74,42 @@ const AddClaim = ({ navigation }) => {
 
       console.log('Form Data:', updatedFormData)
 
-      const insertId = await insertClaim(updatedFormData)
+      // Check if photos exist and save them to the gallery
+      if (updatedFormData.photos && updatedFormData.photos.length > 0) {
+        await savePhotosToGallery(updatedFormData.photos)
+      }
 
+      const insertId = await insertClaim(updatedFormData)
       setFormData(initialFormData)
+
       Toast.show({
         text1: 'Success',
         text2: 'Claim saved successfully!',
         type: 'success',
       })
+
       setTimeout(() => {
         navigation.navigate('HomeApollo')
       }, 2000)
     } catch (error) {
       console.error('Failed to save:', error)
+    }
+  }
+
+  const savePhotosToGallery = async (photos) => {
+    const { status } = await MediaLibrary.requestPermissionsAsync()
+
+    if (status === 'granted') {
+      try {
+        for (let photoUri of photos) {
+          await MediaLibrary.createAssetAsync(photoUri)
+        }
+        console.log('Photos saved to gallery!')
+      } catch (error) {
+        console.error('Error saving photo to gallery:', error)
+      }
+    } else {
+      console.log('Gallery permission not granted')
     }
   }
 
