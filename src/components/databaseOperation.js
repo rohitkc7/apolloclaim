@@ -24,7 +24,7 @@ const insertClaim = async (formData) => {
     } = formData
 
     const photosString = JSON.stringify(photos)
-    const dateSubmitted = new Date().toISOString() // Get the current date in ISO format
+    const dateSubmitted = new Date().toISOString()
 
     console.log('Inserting claim with following data:', formData)
     const result = await db.runAsync(

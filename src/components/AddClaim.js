@@ -33,7 +33,7 @@ const initialFormData = {
   defectArea: '',
   defectName: '',
   photos: [],
-  dateSubmitted: '', // Add this line to initialize the dateSubmitted field
+  dateSubmitted: '',
 }
 
 const AddClaim = ({ navigation }) => {
@@ -68,7 +68,7 @@ const AddClaim = ({ navigation }) => {
 
   const submitData = async () => {
     try {
-      const dateSubmitted = new Date().toISOString() // ISO string format
+      const dateSubmitted = new Date().toISOString()
       const updatedFormData = { ...formData, dateSubmitted }
 
       console.log('Form Data:', updatedFormData)

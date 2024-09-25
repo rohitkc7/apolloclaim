@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import { useRoute, useNavigation } from '@react-navigation/native'
-import { updateClaim } from './databaseOperation' 
-import Toast from 'react-native-toast-message';
+import { updateClaim } from './databaseOperation'
+import Toast from 'react-native-toast-message'
 
 import Form from './Form'
 import Form1 from './Form1'
@@ -25,15 +25,15 @@ const EditClaim = ({}) => {
   const { claimId } = route.params
 
   const [claimData, setClaimData] = useState({
-    location:'',
-    customerName:'',
+    location: '',
+    customerName: '',
     segment: '',
     application: '',
     tyreSize: '',
     plyRating: '',
     brandName: '',
     companyName: '',
-    serialNumber:'',
+    serialNumber: '',
     mouldNo: '',
     nsd1: '',
     nsd2: '',
@@ -58,14 +58,14 @@ const EditClaim = ({}) => {
       if (result) {
         const updatedClaimData = {
           location: result.location || '',
-          customerName: result.customerName ||'',
+          customerName: result.customerName || '',
           segment: result.segment || '',
           application: result.application || '',
           tyreSize: String(result.tyreSize) || '',
           plyRating: result.plyRating || '',
           brandName: result.brandName || '',
           companyName: result.companyName || '',
-          serialNumber: result.serialNumber|| '',
+          serialNumber: result.serialNumber || '',
           mouldNo: result.mouldNo || '',
           nsd1: String(result.nsd1) || '',
           nsd2: String(result.nsd2) || '',
@@ -101,7 +101,6 @@ const EditClaim = ({}) => {
       photos: newPhotos,
     })
   }
-  // Use handleInputChange as the change handler for all forms
   const handleFormChange = handleInputChange
   const handleForm1Change = handleInputChange
   const handleForm2Change = handleInputChange
@@ -110,20 +109,17 @@ const EditClaim = ({}) => {
     try {
       await updateClaim(claimId, claimData)
       console.log('Claim updated successfully')
-          // Show success message
-    Toast.show({
-      type: 'success',
-      position: 'top',
-      text1: 'Success',
-      text2: 'Claim updated successfully',
-      visibilityTime: 2000, // Duration in milliseconds
-    });
+      Toast.show({
+        type: 'success',
+        position: 'top',
+        text1: 'Success',
+        text2: 'Claim updated successfully',
+        visibilityTime: 2000,
+      })
 
-    // Navigate back after showing the message
-    setTimeout(() => {
-      navigation.navigate('AllClaim');
-    }, 2000); // Make sure this matches the visibilityTime for smooth experience
-
+      setTimeout(() => {
+        navigation.navigate('AllClaim')
+      }, 2000)
     } catch (error) {
       console.error('Error updating claim:', error)
     }

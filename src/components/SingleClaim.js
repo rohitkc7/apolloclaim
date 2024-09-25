@@ -123,8 +123,6 @@ const SingleClaim = ({ route }) => {
       if (format === 'CSV') {
         fileUri = await generateCSV()
       }
-
-      // Share the file
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri)
       } else {
@@ -280,7 +278,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderRadius: 8,
   },
-  // Add more styles as needed
 })
 
 export default SingleClaim

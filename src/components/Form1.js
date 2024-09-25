@@ -1,100 +1,29 @@
 import React, { useState } from 'react'
 import { SafeAreaView, View, Text, StyleSheet, TextInput } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
+import {
+  tyreSizeData,
+  tyreSizeMapping,
+  plyRating,
+  companyName,
+} from './tyreData'
 
-const tyreSizeData = [
-  { label: '7.00-15', value: '7.00-15' },
-  { label: '7.00-16', value: '7.00-16' },
-  { label: '7.50-16', value: '7.50-16' },
-  { label: '8.25-16', value: '8.25-16' },
-  { label: '10.00-20', value: '10.00-20' },
-  { label: '11.00-20', value: '11.00-20' },
-  { label: '12.00-20', value: '12.00-20' },
-  { label: '14.00-20', value: '14.00-20' },
-  { label: '295/95D20', value: '295/95D20' },
-  { label: '8.25-20', value: '8.25-20' },
-  { label: '9.00-20', value: '9.00-20' },
-  { label: '10.00R20', value: '10.00R20' },
-  { label: '295/80R22.5', value: '295/80R22.5' },
-  { label: '295/90R20', value: '295/90R20' },
-  { label: '9.00R20', value: '9.00R20' },
-  { label: '8.25R20', value: '8.25R20' },
-  { label: '145 R12 LT', value: '145 R12 LT' },
-  { label: '165 R14 LT', value: '165 R14 LT' },
-  { label: '215/75 R16', value: '215/75 R16' },
-  { label: '7.00 R15', value: '7.00 R15' },
-  { label: '7.00 R16', value: '7.00 R16' },
-  { label: '215/75 R15', value: '215/75 R15' },
-  { label: '215/75 R17.5', value: '215/75 R17.5' },
-  { label: '225/75 R17.5', value: '225/75 R17.5' },
-  { label: '235/75 R17.5', value: '235/75 R17.5' },
-  { label: '7.50 R16', value: '7.50 R16' },
-  { label: '215/75 R15', value: '215/75 R15' },
-]
-
-const tyreSizeMapping = {
-  LTB: ['7.00-15', '7.00-16', '7.50-16', '8.25-16'],
-  TBB: [
-    '10.00-20',
-    '11.00-20',
-    '12.00-20',
-    '14.00-20',
-    '295/95D20',
-    '8.25-20',
-    '9.00-20',
-  ],
-  TBR: ['10.00R20', '295/80R22.5', '295/90R20', '9.00R20', '8.25R20'],
-  LTR: [
-    '145 R12 LT',
-    '165 R14 LT',
-    '215/75 R16',
-    '7.00 R15',
-    '7.00 R16',
-    '215/75 R15',
-  ],
-  SCV: ['215/75 R17.5', '225/75 R17.5', '235/75 R17.5', '7.50 R16'],
-}
-
-// Default: Show all tyre sizes if segment is not LTB, TBB, TBR, LTR, SCV
 const defaultTyreSizes = tyreSizeData.map((item) => item.value)
 
-// Function to get tyre sizes based on segment
 const getTyreSizes = (segment) => {
   if (tyreSizeMapping[segment]) {
     return tyreSizeData.filter((item) =>
       tyreSizeMapping[segment].includes(item.value),
     )
   }
-  return tyreSizeData // Show all tyre sizes if segment is not one of the listed
+  return tyreSizeData
 }
-
-const plyRating = [
-  { label: '8', value: '8' },
-  { label: '10', value: '10' },
-  { label: '12', value: '12' },
-  { label: '14', value: '14' },
-  { label: '16', value: '16' },
-  { label: '18', value: '18' },
-  { label: '20', value: '20' },
-]
-
-const companyName = [
-  { label: 'Apollo', value: 'Apollo' },
-  { label: 'MRF', value: 'MRF' },
-  { label: 'JK', vlaue: 'JK' },
-  { label: 'CEAT', value: 'CEAT' },
-  { label: 'MAXXIS', value: 'MAXXIS' },
-  { label: 'Bridgestone', value: 'Bridgestone' },
-  { label: 'Goodyear', value: 'Goodyear' },
-  { label: 'Continental', value: 'Continental' },
-  { label: 'Others', value: 'Others' },
-]
 
 const createNsdData = () => {
   const data = []
   for (let i = 0; i <= 50; i++) {
-    const value = (i / 100).toFixed(2) // Increment by 0.01, values from 0.00 to 0.50
-    const label = value.toString()  
+    const value = (i / 100).toFixed(2)
+    const label = value.toString()
     data.push({ label, value })
   }
   return data
@@ -225,7 +154,7 @@ const Form1 = ({ formData, onChange }) => {
               placeholderStyle={styles.placeholderStyle}
               selectedTextStyle={styles.selectedTextStyle}
               inputSearchStyle={styles.inputSearchStyle}
-              data={nsdData[field]} // Access data from the object
+              data={nsdData[field]}
               search
               maxHeight={300}
               labelField="label"
@@ -263,7 +192,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
-    borderRadius: 8, // Add border radius here
+    borderRadius: 8,
     marginBottom: 20,
     paddingHorizontal: 10,
     fontSize: 16,

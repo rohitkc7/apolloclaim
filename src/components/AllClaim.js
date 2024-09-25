@@ -21,7 +21,7 @@ import { Platform } from 'react-native'
 const AllClaim = ({ navigation, route }) => {
   const [claims, setClaims] = useState([])
   const [isCheckboxMode, setCheckboxMode] = useState(false)
-  const [selectedClaims, setSelectedClaims] = useState(new Set()) // Track selected claims
+  const [selectedClaims, setSelectedClaims] = useState(new Set())
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
 
@@ -46,7 +46,7 @@ const AllClaim = ({ navigation, route }) => {
 
   const fetchClaims = async () => {
     try {
-      const db = await setupDatabase() // Wait for database setup to complete
+      const db = await setupDatabase()
       const rows = await db.getAllAsync('SELECT * FROM claims')
       setClaims(rows)
     } catch (error) {
@@ -62,18 +62,16 @@ const AllClaim = ({ navigation, route }) => {
     setCurrentPage(newPage)
   }
   const totalPages = Math.ceil(claims.length / itemsPerPage)
-  // Get claims for current page
+
   const currentClaims = claims.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   )
   const handleLongPress = (claimId) => {
     if (isCheckboxMode) {
-      // If checkbox mode is already active, reset the state
       setCheckboxMode(false)
       setSelectedClaims(new Set())
     } else {
-      // Activate checkbox mode and select the item
       setCheckboxMode(true)
       setSelectedClaims((prevSelected) => {
         const newSelected = new Set(prevSelected)
@@ -102,12 +100,10 @@ const AllClaim = ({ navigation, route }) => {
       return
     }
 
-    // Filter the selected claims
     const filteredClaims = claims.filter((claim) =>
       selectedClaims.has(claim.id),
     )
 
-    // Create CSV
     const csv = [
       [
         'ID',
@@ -151,11 +147,9 @@ const AllClaim = ({ navigation, route }) => {
       .map((e) => e.join(','))
       .join('\n')
 
-    // Create file
     const fileUri = FileSystem.documentDirectory + 'claims.csv'
     await FileSystem.writeAsStringAsync(fileUri, csv)
 
-    // Share file
     if (await Sharing.isAvailableAsync()) {
       await Sharing.shareAsync(fileUri, {
         mimeType: 'text/csv',

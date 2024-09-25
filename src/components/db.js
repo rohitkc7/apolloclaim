@@ -5,7 +5,6 @@ const setupDatabase = async () => {
     useNewConnection: true,
   })
 
-  // Create a new table with the dateSubmitted column
   await db.execAsync(`
     PRAGMA journal_mode = WAL;
     CREATE TABLE IF NOT EXISTS claims (

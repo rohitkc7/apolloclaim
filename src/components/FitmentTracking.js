@@ -14,12 +14,11 @@ const FitmentTracking = () => {
     labels: ['Segment A', 'Segment B', 'Segment C', 'Segment D'], // x-axis labels
     datasets: [
       {
-        data: [40, 60, 80, 20], // values for each segment
+        data: [40, 60, 80, 20],
       },
     ],
   }
 
-  // Data for pie chart
   const pieData = [
     {
       name: 'Segment A',
@@ -61,7 +60,7 @@ const FitmentTracking = () => {
       </Text>
       <BarChart
         data={barData}
-        width={Dimensions.get('window').width - 30} // Full-width chart
+        width={Dimensions.get('window').width - 30}
         height={220}
         yAxisLabel=""
         chartConfig={{
