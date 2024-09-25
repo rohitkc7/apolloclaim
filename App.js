@@ -1,3 +1,5 @@
+import Login from './src/components/Login'
+import Signup from './src/components/Signup'
 import React from 'react'
 import { StyleSheet, Image } from 'react-native'
 import HomeApollo from './src/components/HomeApollo'
@@ -49,6 +51,8 @@ const DrawerNavigator = () => (
     <Drawer.Screen name="Complaint Management" component={AllClaim} />
     <Drawer.Screen name="Fitment Survey" component={Fitment} />
     <Drawer.Screen name="Fitment Tracking" component={FitmentTracking} />
+    <Drawer.Screen name="Login" component={Login} />
+    <Drawer.Screen name="SignUp" component={Signup} />
   </Drawer.Navigator>
 )
 

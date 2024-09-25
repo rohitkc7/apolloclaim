@@ -11,9 +11,10 @@ import {
 } from 'react-native'
 import * as FileSystem from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
-import Checkbox from 'expo-checkbox'
-import AntDesign from '@expo/vector-icons/AntDesign'
-import { DrawerActions } from '@react-navigation/native'
+import { useFocusEffect } from '@react-navigation/native'
+
+import { firestore } from '../../firebaseConfig' // Adjusting the path to access firebaseConfig.js
+import { collection, getDocs } from 'firebase/firestore' // Import collection and getDocs
 
 import setupDatabase from './db'
 import { Platform } from 'react-native'
@@ -46,13 +47,23 @@ const AllClaim = ({ navigation, route }) => {
 
   const fetchClaims = async () => {
     try {
-      const db = await setupDatabase()
-      const rows = await db.getAllAsync('SELECT * FROM claims')
-      setClaims(rows)
+      const claimsCollection = collection(firestore, 'claims') // Access the 'claims' collection
+      const claimsSnapshot = await getDocs(claimsCollection) // Fetch documents
+      const claimsData = claimsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      setClaims(claimsData)
     } catch (error) {
       console.error('Error fetching claims:', error)
     }
   }
+  useFocusEffect(
+    React.useCallback(() => {
+      setCurrentPage(1) // Reset to first page
+      fetchClaims() // Fetch claims when entering the screen
+    }, []),
+  )
 
   const handleViewClaim = (claimId) => {
     navigation.navigate('SingleClaim', { claimId })
@@ -67,30 +78,7 @@ const AllClaim = ({ navigation, route }) => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   )
-  const handleLongPress = (claimId) => {
-    if (isCheckboxMode) {
-      setCheckboxMode(false)
-      setSelectedClaims(new Set())
-    } else {
-      setCheckboxMode(true)
-      setSelectedClaims((prevSelected) => {
-        const newSelected = new Set(prevSelected)
-        newSelected.add(claimId)
-        return newSelected
-      })
-    }
-  }
-  const handleCheckboxChange = (claimId) => {
-    setSelectedClaims((prevSelected) => {
-      const newSelected = new Set(prevSelected)
-      if (newSelected.has(claimId)) {
-        newSelected.delete(claimId)
-      } else {
-        newSelected.add(claimId)
-      }
-      return newSelected
-    })
-  }
+
   const handleShare = async () => {
     if (selectedClaims.size === 0) {
       Alert.alert(
@@ -203,7 +191,7 @@ const AllClaim = ({ navigation, route }) => {
             <View style={styles.claimCardContent}>
               <Text style={styles.cardTitle}>Issue No: N000{item.id}</Text>
               <Text style={styles.cardDetail}>
-                Date: {new Date(item.dateSubmitted).toLocaleDateString()}
+                Date: {item.date?.toDate().toLocaleDateString()}
               </Text>
               <Text style={styles.cardDetail}>Segment: {item.segment}</Text>
               <Text style={styles.cardDetail}>Size: {item.tyreSize}</Text>

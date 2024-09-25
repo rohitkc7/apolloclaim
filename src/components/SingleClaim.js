@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import setupDatabase from './db'
 import * as FileSystem from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import ImageView from 'react-native-image-viewing'
+import { firestore } from '../../firebaseConfig' // Adjusting the path to access firebaseConfig.js
+import { doc, getDoc } from 'firebase/firestore'
 
 const SingleClaim = ({ route }) => {
   const [isImageViewVisible, setIsImageViewVisible] = useState(false)
@@ -23,30 +24,48 @@ const SingleClaim = ({ route }) => {
   const navigation = useNavigation()
 
   useEffect(() => {
-    fetchClaimDetails()
-  }, [])
+    const fetchClaimDetails = async () => {
+      try {
+        const claimRef = doc(firestore, 'claims', claimId)
+        const claimSnapshot = await getDoc(claimRef)
 
-  const fetchClaimDetails = async () => {
-    try {
-      const db = await setupDatabase()
-      const claimData = await db.getFirstAsync(
-        'SELECT * FROM claims WHERE id = ?',
-        [claimId],
-      )
-      if (claimData.photos) {
-        claimData.photos = JSON.parse(claimData.photos)
-      } else {
-        claimData.photos = []
+        if (claimSnapshot.exists()) {
+          const claimData = claimSnapshot.data()
+          claimData.photos = claimData.photos
+            ? JSON.parse(claimData.photos)
+            : []
+          setClaim(claimData)
+          console.log('Fetched claim data:', claimData)
+        } else {
+          console.log('No such claim found!')
+        }
+      } catch (error) {
+        console.error('Error fetching claim details:', error)
       }
-      setClaim(claimData)
-      console.log('Fetched claim data:', claimData)
-    } catch (error) {
-      console.error('Error fetching claim details:', error)
     }
-  }
+
+    fetchClaimDetails()
+  }, [claimId]) // Dependency array includes claimId
+
+  // Set navigation options after claim data is fetched
+  useEffect(() => {
+    if (claim) {
+      navigation.setOptions({
+        title: claim.claimTitle,
+        headerRight: () => (
+          <Button onPress={handleSave} title="Save" color="#007bff" />
+        ),
+      })
+    }
+  }, [claim, navigation])
+
   const handleImagePress = (index) => {
     setSelectedImageIndex(index)
     setIsImageViewVisible(true)
+  }
+
+  if (!claim) {
+    return <Text>Loading...</Text> // Show loading state while fetching data
   }
 
   const generateCSV = async () => {
@@ -133,16 +152,16 @@ const SingleClaim = ({ route }) => {
     }
   }
 
-  React.useLayoutEffect(() => {
-    if (claim) {
-      navigation.setOptions({
-        title: claim.claimTitle,
-        headerRight: () => (
-          <Button onPress={handleSave} title="Save" color="#007bff" />
-        ),
-      })
-    }
-  }, [navigation, claim])
+  // React.useLayoutEffect(() => {
+  //   if (claim) {
+  //     navigation.setOptions({
+  //       title: claim.claimTitle,
+  //       headerRight: () => (
+  //         <Button onPress={handleSave} title="Save" color="#007bff" />
+  //       ),
+  //     })
+  //   }
+  // }, [navigation, claim])
 
   if (!claim) {
     return (
@@ -159,9 +178,9 @@ const SingleClaim = ({ route }) => {
         <Text style={styles.content}>{claim.location}</Text>
       </View>
       <View style={styles.section}>
-        <Text style={styles.title}>Location</Text>
+        <Text style={styles.title}>Date</Text>
         <Text style={styles.content}>
-          {new Date(claim.dateSubmitted).toLocaleDateString()}
+          {claim.date?.toDate().toLocaleDateString()}
         </Text>
       </View>
       <View style={styles.section}>
