@@ -18,6 +18,7 @@ import { patternData, defectAreaData, defectNameData } from './tyreData'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import EvilIcons from '@expo/vector-icons/EvilIcons'
+import Entypo from '@expo/vector-icons/Entypo'
 
 const DropdownField = ({ label, data, value, onChange }) => {
   const [isFocus, setIsFocus] = useState(false)
@@ -104,6 +105,14 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
 
     onChange('defectName', '')
   }
+
+  // Function to remove a photo
+  const removePhoto = (index) => {
+    const updatedPhotos = [...photos]
+    updatedPhotos.splice(index, 1)
+    setPhotos(updatedPhotos)
+    onChange('photos', updatedPhotos)
+  }
   return (
     <SafeAreaView style={styles.container}>
       <View>
@@ -136,11 +145,15 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
         {photos.length > 0 && (
           <ScrollView horizontal style={styles.photoContainer}>
             {photos.slice(0, 3).map((photoUri, index) => (
-              <Image
-                key={index}
-                source={{ uri: photoUri }}
-                style={styles.photo}
-              />
+              <View key={index} style={styles.photoWrapper}>
+                <Image source={{ uri: photoUri }} style={styles.photo} />
+                <TouchableOpacity
+                  style={styles.removeIcon}
+                  onPress={() => removePhoto(index)}
+                >
+                  <Entypo name="circle-with-cross" size={24} color="red" />
+                </TouchableOpacity>
+              </View>
             ))}
           </ScrollView>
         )}
@@ -270,6 +283,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     backgroundColor: 'black',
+  },
+  removeIcon: {
+    position: 'absolute',
+    top: 0,
+    right: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: 12,
+    padding: 2,
   },
 })
 export default Form3
