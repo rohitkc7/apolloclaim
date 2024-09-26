@@ -21,6 +21,28 @@ const Form = ({ formData, onChange }) => {
   const handleChange = (field, value) => {
     onChange(field, value)
   }
+  const validateForm1 = () => {
+    const emptyFields = []
+
+    if (!formData.location) emptyFields.push('Location')
+    if (!formData.customerName) emptyFields.push('Customer Name')
+    if (!formData.segment) emptyFields.push('Segment')
+    if (!formData.application) emptyFields.push('Application')
+
+    if (emptyFields.length > 0) {
+      const message = `${emptyFields.join(', ')} ${
+        emptyFields.length > 1 ? 'are' : 'is'
+      } required!`
+      Toast.show({
+        text1: 'Error',
+        text2: message,
+        type: 'error',
+      })
+      return false
+    }
+    return true
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View>

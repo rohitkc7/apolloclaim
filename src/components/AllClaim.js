@@ -16,8 +16,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { firestore } from '../../firebaseConfig' // Adjusting the path to access firebaseConfig.js
 import { collection, getDocs } from 'firebase/firestore' // Import collection and getDocs
 
-import setupDatabase from './db'
-import { Platform } from 'react-native'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
 const AllClaim = ({ navigation, route }) => {
   const [claims, setClaims] = useState([])
@@ -53,17 +52,17 @@ const AllClaim = ({ navigation, route }) => {
         id: doc.id,
         ...doc.data(),
       }))
-      setClaims(claimsData)
+
+      // Sort claimsData by ID numerically
+      const sortedClaims = claimsData.sort(
+        (a, b) => parseInt(a.id) - parseInt(b.id),
+      )
+
+      setClaims(sortedClaims)
     } catch (error) {
       console.error('Error fetching claims:', error)
     }
   }
-  useFocusEffect(
-    React.useCallback(() => {
-      setCurrentPage(1) // Reset to first page
-      fetchClaims() // Fetch claims when entering the screen
-    }, []),
-  )
 
   const handleViewClaim = (claimId) => {
     navigation.navigate('SingleClaim', { claimId })
@@ -149,33 +148,31 @@ const AllClaim = ({ navigation, route }) => {
   }
   const renderPagination = () => (
     <View style={styles.paginationContainer}>
-      <TouchableOpacity
-        style={styles.paginationButton}
-        disabled={currentPage === 1}
-        onPress={() => handlePageChange(currentPage - 1)}
-      >
-        <Text style={styles.paginationText}>Previous</Text>
-      </TouchableOpacity>
-      <Text
-        style={styles.pageIndicator}
-      >{`${currentPage} / ${totalPages}`}</Text>
-      <TouchableOpacity
-        style={styles.paginationButton}
-        disabled={currentPage === totalPages}
-        onPress={() => handlePageChange(currentPage + 1)}
-      >
-        <Text style={styles.paginationText}>Next</Text>
-      </TouchableOpacity>
+      {currentPage !== 1 && (
+        <TouchableOpacity
+          style={styles.paginationButton}
+          onPress={() => handlePageChange(currentPage - 1)}
+        >
+          <MaterialIcons name="navigate-before" size={24} color="black" />
+        </TouchableOpacity>
+      )}
+      <Text style={styles.pageIndicator}>
+        {`${currentPage} / ${totalPages}`}
+      </Text>
+      {currentPage !== totalPages && (
+        <TouchableOpacity
+          style={styles.paginationButton}
+          onPress={() => handlePageChange(currentPage + 1)}
+        >
+          <MaterialIcons name="navigate-next" size={24} color="black" />
+        </TouchableOpacity>
+      )}
     </View>
   )
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}></View>
-      <View style={styles.claimHeading}>
-        {/* <Text style={styles.heading}>Scrap Analysis</Text> */}
-      </View>
-
       {isCheckboxMode && (
         <TouchableOpacity style={styles.claimShare} onPress={handleShare}>
           <Text style={styles.shareText}>Share Selected</Text>
@@ -230,16 +227,7 @@ const styles = StyleSheet.create({
     padding: 5,
     margin: 5,
   },
-  header: {
-    alignItems: 'left',
-  },
 
-  claimItemWrapper: {
-    marginBottom: 10,
-  },
-  checkbox: {
-    marginLeft: 10,
-  },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -284,11 +272,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#555',
     marginBottom: 3,
-  },
-  checkbox: {
-    position: 'absolute',
-    right: 10,
-    top: 10,
   },
   viewButton: {
     backgroundColor: '#007BFF',

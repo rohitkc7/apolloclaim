@@ -13,6 +13,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import Toast from 'react-native-toast-message'
 import { createDrawerNavigator } from '@react-navigation/drawer'
+import NetInfo from '@react-native-community/netinfo'
 
 const Drawer = createDrawerNavigator()
 const Stack = createStackNavigator()
@@ -57,8 +58,27 @@ const DrawerNavigator = () => (
 )
 
 const App = () => {
+  const [isConnected, setIsConnected] = useState(true)
+
+  // Set up NetInfo to monitor internet connectivity
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsConnected(state.isConnected)
+    })
+
+    // Clean up the listener
+    return () => {
+      unsubscribe()
+    }
+  }, [])
   return (
     <NavigationContainer>
+      {/* Show connectivity warning if no internet */}
+      {!isConnected && (
+        <View style={styles.banner}>
+          <Text style={styles.bannerText}>No internet connection</Text>
+        </View>
+      )}
       <DrawerNavigator />
       <Toast />
     </NavigationContainer>

@@ -34,7 +34,7 @@ const initialFormData = {
   defectArea: '',
   defectName: '',
   photos: [],
-  dateSubmitted: '',
+  date: '',
 }
 
 const AddClaim = ({ navigation }) => {
@@ -69,8 +69,8 @@ const AddClaim = ({ navigation }) => {
 
   const submitData = async () => {
     try {
-      const dateSubmitted = new Date().toISOString()
-      const updatedFormData = { ...formData, dateSubmitted }
+      const date = new Date().toISOString()
+      const updatedFormData = { ...formData, date }
 
       console.log('Form Data:', updatedFormData)
 
@@ -149,6 +149,78 @@ const AddClaim = ({ navigation }) => {
     }
   }
 
+  const validateForm1 = () => {
+    const emptyFields = []
+
+    if (!formData.location) emptyFields.push('Location')
+    if (!formData.customerName) emptyFields.push('Customer Name')
+    if (!formData.segment) emptyFields.push('Segment')
+    if (!formData.application) emptyFields.push('Application')
+
+    if (emptyFields.length > 0) {
+      const message = `${emptyFields.join(', ')} ${
+        emptyFields.length > 1 ? 'are' : 'is'
+      } required!`
+      Toast.show({
+        text1: 'Error',
+        text2: message,
+        type: 'error',
+      })
+      return false
+    }
+    return true
+  }
+  const validateForm2 = () => {
+    const emptyFields = []
+
+    if (!formData.tyreSize) emptyFields.push('Tyre Size')
+    if (!formData.plyRating) emptyFields.push('Ply Rating')
+    if (!formData.companyName) emptyFields.push('Company Name')
+    if (!formData.brandName) emptyFields.push('Brand Name')
+    if (!formData.serialNumber) emptyFields.push('Serial Number')
+    if (!formData.mouldNo) emptyFields.push('Mould No')
+    if (!formData.nsd1) emptyFields.push('NSD 1')
+    if (!formData.nsd2) emptyFields.push('NSD 2')
+    if (!formData.nsd3) emptyFields.push('NSD 3')
+
+    if (emptyFields.length > 0) {
+      const message = `${emptyFields.join(', ')} ${
+        emptyFields.length > 1 ? 'are' : 'is'
+      } required!`
+      Toast.show({
+        text1: 'Error',
+        text2: message,
+        type: 'error',
+      })
+      return false
+    }
+    return true
+  }
+
+  const validateForm3 = () => {
+    const emptyFields = []
+
+    if (!formData.pattern) emptyFields.push('Pattern')
+    if (!formData.defectArea) emptyFields.push('Defect Area')
+    if (!formData.defectName) emptyFields.push('Defect Name')
+
+    if (emptyFields.length > 0) {
+      const message = `${emptyFields.join(', ')} ${
+        emptyFields.length > 1 ? 'are' : 'is'
+      } required!`
+      Toast.show({
+        text1: 'Error',
+        text2: message,
+        type: 'error',
+      })
+      return false
+    }
+    return true
+  }
+  const validateAllForms = () => {
+    return validateForm1() && validateForm2() && validateForm3()
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -161,8 +233,20 @@ const AddClaim = ({ navigation }) => {
             style={styles.nextButton}
             onPress={
               currentPage === 4
-                ? submitData
-                : () => setCurrentPage((prev) => Math.min(prev + 1, 4))
+                ? () => {
+                    if (validateAllForms()) {
+                      submitData() // Full validation before submit
+                    }
+                  }
+                : () => {
+                    if (currentPage === 1 && validateForm1()) {
+                      setCurrentPage(2) // Move to form 2
+                    } else if (currentPage === 2 && validateForm2()) {
+                      setCurrentPage(3) // Move to form 3
+                    } else if (currentPage === 3 && validateForm3()) {
+                      setCurrentPage(4) // Move to preview/submit
+                    }
+                  }
             }
           >
             <Text style={styles.buttonText}>

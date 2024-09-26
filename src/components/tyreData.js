@@ -77,7 +77,7 @@ export const plyRating = [
 export const companyName = [
   { label: 'Apollo', value: 'Apollo' },
   { label: 'MRF', value: 'MRF' },
-  { label: 'JK', vlaue: 'JK' },
+  { label: 'JK', value: 'JK' },
   { label: 'CEAT', value: 'CEAT' },
   { label: 'MAXXIS', value: 'MAXXIS' },
   { label: 'Bridgestone', value: 'Bridgestone' },

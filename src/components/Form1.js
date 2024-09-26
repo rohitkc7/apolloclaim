@@ -58,6 +58,33 @@ const Form1 = ({ formData, onChange }) => {
     onChange(field, value)
   }
 
+  const validateForm2 = () => {
+    const emptyFields = []
+
+    if (!formData.tyreSize) emptyFields.push('Tyre Size')
+    if (!formData.plyRating) emptyFields.push('Ply Rating')
+    if (!formData.companyName) emptyFields.push('Company Name')
+    if (!formData.brandName) emptyFields.push('Brand Name')
+    if (!formData.serialNumber) emptyFields.push('Serial Number')
+    if (!formData.mouldNo) emptyFields.push('Mould No')
+    if (!formData.nsd1) emptyFields.push('NSD 1')
+    if (!formData.nsd2) emptyFields.push('NSD 2')
+    if (!formData.nsd3) emptyFields.push('NSD 3')
+
+    if (emptyFields.length > 0) {
+      const message = `${emptyFields.join(', ')} ${
+        emptyFields.length > 1 ? 'are' : 'is'
+      } required!`
+      Toast.show({
+        text1: 'Error',
+        text2: message,
+        type: 'error',
+      })
+      return false
+    }
+    return true
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View>

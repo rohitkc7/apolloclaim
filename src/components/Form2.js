@@ -113,6 +113,28 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
     setPhotos(updatedPhotos)
     onChange('photos', updatedPhotos)
   }
+
+  const validateForm3 = () => {
+    const emptyFields = []
+
+    if (!formData.pattern) emptyFields.push('Pattern')
+    if (!formData.defectArea) emptyFields.push('Defect Area')
+    if (!formData.defectName) emptyFields.push('Defect Name')
+
+    if (emptyFields.length > 0) {
+      const message = `${emptyFields.join(', ')} ${
+        emptyFields.length > 1 ? 'are' : 'is'
+      } required!`
+      Toast.show({
+        text1: 'Error',
+        text2: message,
+        type: 'error',
+      })
+      return false
+    }
+    return true
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View>
