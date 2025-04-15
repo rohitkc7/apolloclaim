@@ -4,7 +4,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   ScrollView,
   Image,
   TouchableOpacity,
@@ -12,7 +11,7 @@ import {
   Modal,
 } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
-import { Camera, CameraType } from 'expo-camera/legacy'
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'
 import * as FileSystem from 'expo-file-system'
 import { patternData, defectAreaData, defectNameData } from './tyreData'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -46,14 +45,16 @@ const DropdownField = ({ label, data, value, onChange }) => {
     </>
   )
 }
-const Form3 = ({ formData, onChange, onPic1Change }) => {
+
+const Form2 = ({ formData, onChange, onPic1Change }) => {
   const [showCamera, setShowCamera] = useState(false)
-  const [type, setType] = useState(CameraType.back)
-  const [permission, requestPermission] = Camera.useCameraPermissions()
+  const [type, setType] = useState('back')
+  const [permission, requestPermission] = useCameraPermissions()
   const [photos, setPhotos] = useState(formData.photos || [])
   const [filteredDefectNames, setFilteredDefectNames] = useState([])
 
   if (!permission) {
+    // Camera permissions are still loading.
     return <View />
   }
 
@@ -68,12 +69,8 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
     )
   }
 
-  const toggleCameraType = () => {
-    setType((prevType) =>
-      prevType === Camera.Constants.Type.back
-        ? Camera.Constants.Type.front
-        : Camera.Constants.Type.back,
-    )
+  const toggleCameraType = async () => {
+    setType((current) => (current === 'back' ? 'front' : 'back'))
   }
 
   const takePhoto = async () => {
@@ -114,27 +111,6 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
     onChange('photos', updatedPhotos)
   }
 
-  const validateForm3 = () => {
-    const emptyFields = []
-
-    if (!formData.pattern) emptyFields.push('Pattern')
-    if (!formData.defectArea) emptyFields.push('Defect Area')
-    if (!formData.defectName) emptyFields.push('Defect Name')
-
-    if (emptyFields.length > 0) {
-      const message = `${emptyFields.join(', ')} ${
-        emptyFields.length > 1 ? 'are' : 'is'
-      } required!`
-      Toast.show({
-        text1: 'Error',
-        text2: message,
-        type: 'error',
-      })
-      return false
-    }
-    return true
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <View>
@@ -157,7 +133,7 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
           onChange={(value) => onChange('defectName', value)}
         />
       </View>
-      <View style={styles.cameraContainer}>
+      <CameraView style={styles.cameraContainer}>
         <TouchableOpacity
           style={styles.button}
           onPress={() => setShowCamera(true)}
@@ -179,10 +155,10 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
             ))}
           </ScrollView>
         )}
-      </View>
+      </CameraView>
       <Modal visible={showCamera} transparent={false} animationType="slide">
         <View style={styles.modalContainer}>
-          <Camera
+          <CameraView
             style={styles.fullScreenCamera}
             type={type}
             ratio="4:3"
@@ -212,7 +188,7 @@ const Form3 = ({ formData, onChange, onPic1Change }) => {
                 <Ionicons name="exit" size={24} color="black" />
               </TouchableOpacity>
             </View>
-          </Camera>
+          </CameraView>
         </View>
       </Modal>
     </SafeAreaView>
@@ -315,4 +291,4 @@ const styles = StyleSheet.create({
     padding: 2,
   },
 })
-export default Form3
+export default Form2

@@ -15,6 +15,10 @@ import { insertClaim } from './databaseOperation'
 import { useFocusEffect } from '@react-navigation/native'
 import Toast from 'react-native-toast-message'
 import * as MediaLibrary from 'expo-media-library'
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { doc, setDoc, Timestamp } from 'firebase/firestore'
+import { auth, firestore } from '../../firebaseConfig' // Adjusting the path to access firebaseConfig.js
+import firebase from 'firebase/app' // Adjust based on your Firebase setup
 
 const initialFormData = {
   location: '',
@@ -35,6 +39,7 @@ const initialFormData = {
   defectName: '',
   photos: [],
   date: '',
+  userId: '',
 }
 
 const AddClaim = ({ navigation }) => {
@@ -69,8 +74,24 @@ const AddClaim = ({ navigation }) => {
 
   const submitData = async () => {
     try {
-      const date = new Date().toISOString()
-      const updatedFormData = { ...formData, date }
+      const currentUser = auth.currentUser
+
+      if (!currentUser) {
+        Toast.show({
+          text1: 'Error',
+          text2: 'Please log in to submit a claim',
+          type: 'error',
+        })
+        return
+      }
+
+      const date = Timestamp.now() // Use Firestore Timestamp
+      //const uid = auth.currentUser.uid
+      const updatedFormData = {
+        ...formData,
+        date,
+        userId: currentUser.uid,
+      }
 
       console.log('Form Data:', updatedFormData)
 
@@ -149,77 +170,77 @@ const AddClaim = ({ navigation }) => {
     }
   }
 
-  const validateForm1 = () => {
-    const emptyFields = []
+  // const validateForm1 = () => {
+  //   const emptyFields = []
 
-    if (!formData.location) emptyFields.push('Location')
-    if (!formData.customerName) emptyFields.push('Customer Name')
-    if (!formData.segment) emptyFields.push('Segment')
-    if (!formData.application) emptyFields.push('Application')
+  //   if (!formData.location) emptyFields.push('Location')
+  //   if (!formData.customerName) emptyFields.push('Customer Name')
+  //   if (!formData.segment) emptyFields.push('Segment')
+  //   if (!formData.application) emptyFields.push('Application')
 
-    if (emptyFields.length > 0) {
-      const message = `${emptyFields.join(', ')} ${
-        emptyFields.length > 1 ? 'are' : 'is'
-      } required!`
-      Toast.show({
-        text1: 'Error',
-        text2: message,
-        type: 'error',
-      })
-      return false
-    }
-    return true
-  }
-  const validateForm2 = () => {
-    const emptyFields = []
+  //   if (emptyFields.length > 0) {
+  //     const message = `${emptyFields.join(', ')} ${
+  //       emptyFields.length > 1 ? 'are' : 'is'
+  //     } required!`
+  //     Toast.show({
+  //       text1: 'Error',
+  //       text2: message,
+  //       type: 'error',
+  //     })
+  //     return false
+  //   }
+  //   return true
+  // }
+  // const validateForm2 = () => {
+  //   const emptyFields = []
 
-    if (!formData.tyreSize) emptyFields.push('Tyre Size')
-    if (!formData.plyRating) emptyFields.push('Ply Rating')
-    if (!formData.companyName) emptyFields.push('Company Name')
-    if (!formData.brandName) emptyFields.push('Brand Name')
-    if (!formData.serialNumber) emptyFields.push('Serial Number')
-    if (!formData.mouldNo) emptyFields.push('Mould No')
-    if (!formData.nsd1) emptyFields.push('NSD 1')
-    if (!formData.nsd2) emptyFields.push('NSD 2')
-    if (!formData.nsd3) emptyFields.push('NSD 3')
+  //   if (!formData.tyreSize) emptyFields.push('Tyre Size')
+  //   if (!formData.plyRating) emptyFields.push('Ply Rating')
+  //   if (!formData.companyName) emptyFields.push('Company Name')
+  //   if (!formData.brandName) emptyFields.push('Brand Name')
+  //   if (!formData.serialNumber) emptyFields.push('Serial Number')
+  //   if (!formData.mouldNo) emptyFields.push('Mould No')
+  //   if (!formData.nsd1) emptyFields.push('NSD 1')
+  //   if (!formData.nsd2) emptyFields.push('NSD 2')
+  //   if (!formData.nsd3) emptyFields.push('NSD 3')
 
-    if (emptyFields.length > 0) {
-      const message = `${emptyFields.join(', ')} ${
-        emptyFields.length > 1 ? 'are' : 'is'
-      } required!`
-      Toast.show({
-        text1: 'Error',
-        text2: message,
-        type: 'error',
-      })
-      return false
-    }
-    return true
-  }
+  //   if (emptyFields.length > 0) {
+  //     const message = `${emptyFields.join(', ')} ${
+  //       emptyFields.length > 1 ? 'are' : 'is'
+  //     } required!`
+  //     Toast.show({
+  //       text1: 'Error',
+  //       text2: message,
+  //       type: 'error',
+  //     })
+  //     return false
+  //   }
+  //   return true
+  // }
 
-  const validateForm3 = () => {
-    const emptyFields = []
+  // const validateForm3 = () => {
+  //   const emptyFields = []
 
-    if (!formData.pattern) emptyFields.push('Pattern')
-    if (!formData.defectArea) emptyFields.push('Defect Area')
-    if (!formData.defectName) emptyFields.push('Defect Name')
+  //   if (!formData.pattern) emptyFields.push('Pattern')
+  //   if (!formData.defectArea) emptyFields.push('Defect Area')
+  //   if (!formData.defectName) emptyFields.push('Defect Name')
 
-    if (emptyFields.length > 0) {
-      const message = `${emptyFields.join(', ')} ${
-        emptyFields.length > 1 ? 'are' : 'is'
-      } required!`
-      Toast.show({
-        text1: 'Error',
-        text2: message,
-        type: 'error',
-      })
-      return false
-    }
-    return true
-  }
-  const validateAllForms = () => {
-    return validateForm1() && validateForm2() && validateForm3()
-  }
+  //   if (emptyFields.length > 0) {
+  //     const message = `${emptyFields.join(', ')} ${
+  //       emptyFields.length > 1 ? 'are' : 'is'
+  //     } required!`
+  //     Toast.show({
+  //       text1: 'Error',
+  //       text2: message,
+  //       type: 'error',
+  //     })
+  //     return false
+  //   }
+  //   return true
+  // }
+  // const validateAllForms = () => {
+  //   return validateForm1() && validateForm2() && validateForm3()
+  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -231,20 +252,38 @@ const AddClaim = ({ navigation }) => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={styles.nextButton}
+            /*This is validation's code need to uncomment later*/
+            // onPress={
+            //   currentPage === 4
+            //     ? () => {
+            //         if (validateAllForms()) {
+            //           submitData() // Full validation before submit
+            //         }
+            //       }
+            //     : () => {
+            //         if (currentPage === 1 && validateForm1()) {
+            //           setCurrentPage(2) // Move to form 2
+            //         } else if (currentPage === 2 && validateForm2()) {
+            //           setCurrentPage(3) // Move to form 3
+            //         } else if (currentPage === 3 && validateForm3()) {
+            //           setCurrentPage(4) // Move to preview/submit
+            //         }
+            //       }
+            // }
+
+            //This is a temporary onPress handler to swiftly move across forms whithout validation.
             onPress={
               currentPage === 4
                 ? () => {
-                    if (validateAllForms()) {
-                      submitData() // Full validation before submit
-                    }
+                    submitData()
                   }
                 : () => {
-                    if (currentPage === 1 && validateForm1()) {
-                      setCurrentPage(2) // Move to form 2
-                    } else if (currentPage === 2 && validateForm2()) {
-                      setCurrentPage(3) // Move to form 3
-                    } else if (currentPage === 3 && validateForm3()) {
-                      setCurrentPage(4) // Move to preview/submit
+                    if (currentPage === 1) {
+                      setCurrentPage(2)
+                    } else if (currentPage === 2) {
+                      setCurrentPage(3)
+                    } else if (currentPage === 3) {
+                      setCurrentPage(4)
                     }
                   }
             }

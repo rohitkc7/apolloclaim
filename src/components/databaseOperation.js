@@ -30,11 +30,11 @@ const insertClaim = async (formData) => {
       defectArea,
       defectName,
       photos,
+      userId,
     } = formData
 
     const photosString = JSON.stringify(photos)
 
-    console.log('Inserting claim with following data:', formData)
     const counterRef = doc(
       firestore,
       'Counters',
@@ -47,13 +47,11 @@ const insertClaim = async (formData) => {
     let lastId
     if (!counterDoc.exists()) {
       // If the document does not exist, initialize it
-      console.error('Counter document does not exist! Initializing it now.')
+
       await setDoc(counterRef, { lastId: 0 })
       lastId = 0 // Initialize lastId
-      console.log('Initialized counter with lastId: 0')
     } else {
       lastId = counterDoc.data().lastId || 0 // Default to 0 if lastId is undefined
-      console.log('Current lastId:', lastId)
     }
 
     // Increment the lastId for the new claim
@@ -82,17 +80,15 @@ const insertClaim = async (formData) => {
         defectName,
         photos: photosString,
         date: new Date(),
+        userId,
       })
 
       // Update the counter document with the new last ID
       await transaction.update(counterRef, { lastId })
-      console.log('Updated counter with new lastId:', lastId)
     })
 
-    console.log('Claim saved successfully with ID:', lastId)
     return lastId.toString() // Return the new sequential ID
   } catch (error) {
-    console.error('Failed to save claim:', error)
     throw error
   }
 }

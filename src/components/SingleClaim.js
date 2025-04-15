@@ -5,22 +5,18 @@ import {
   Image,
   StyleSheet,
   ScrollView,
-  Button,
-  Alert,
   TouchableOpacity,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import * as FileSystem from 'expo-file-system'
-import * as Sharing from 'expo-sharing'
 import ImageView from 'react-native-image-viewing'
-import { firestore } from '../../firebaseConfig' // Adjusting the path to access firebaseConfig.js
+import { firestore } from '../../firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore'
 
 const SingleClaim = ({ route }) => {
   const [isImageViewVisible, setIsImageViewVisible] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const { claimId } = route.params
   const [claim, setClaim] = useState(null)
+  const { claimId } = route.params
   const navigation = useNavigation()
 
   useEffect(() => {
@@ -35,7 +31,6 @@ const SingleClaim = ({ route }) => {
             ? JSON.parse(claimData.photos)
             : []
           setClaim(claimData)
-          console.log('Fetched claim data:', claimData)
         } else {
           console.log('No such claim found!')
         }
@@ -45,16 +40,12 @@ const SingleClaim = ({ route }) => {
     }
 
     fetchClaimDetails()
-  }, [claimId]) // Dependency array includes claimId
+  }, [claimId])
 
-  // Set navigation options after claim data is fetched
   useEffect(() => {
     if (claim) {
       navigation.setOptions({
         title: claim.claimTitle,
-        headerRight: () => (
-          <Button onPress={handleSave} title="Save" color="#007bff" />
-        ),
       })
     }
   }, [claim, navigation])
@@ -64,104 +55,12 @@ const SingleClaim = ({ route }) => {
     setIsImageViewVisible(true)
   }
 
-  if (!claim) {
-    return <Text>Loading...</Text> // Show loading state while fetching data
-  }
-
-  const generateCSV = async () => {
-    const headers = [
-      'Date',
-      'Location',
-      'Customer Name',
-      'Segment',
-      'Application',
-      'Tyre Size',
-      'Ply Rating',
-      'Brand Name',
-      'Company Name',
-      'Serial Number',
-      'Mould No',
-      'NSD1',
-      'NSD2',
-      'NSD3',
-      'Pattern',
-      'Defect Area',
-      'Defect Name',
-      'Photos',
-    ]
-    const data = [
-      headers,
-      [
-        claim.date,
-        claim.location,
-        claim.customerName,
-        claim.segment,
-        claim.application,
-        claim.tyreSize,
-        claim.plyRating,
-        claim.brandName,
-        claim.companyName,
-        claim.serialNumber,
-        claim.mouldNo,
-        claim.nsd1,
-        claim.nsd2,
-        claim.nsd3,
-        claim.pattern,
-        claim.defectArea,
-        claim.defectName,
-        claim.photos.join(', '),
-      ],
-    ]
-
-    const csv = data.map((row) => row.join(',')).join('\n')
-
-    const fileUri = FileSystem.documentDirectory + 'claim.csv'
-    await FileSystem.writeAsStringAsync(fileUri, csv, {
-      encoding: FileSystem.EncodingType.UTF8,
-    })
-
-    return fileUri
-  }
-
-  const handleSave = async () => {
-    const format = await new Promise((resolve) => {
-      Alert.alert(
-        'Choose Format',
-        'Select the format you want to save the file as:',
-        [
-          { text: 'CSV', onPress: () => resolve('CSV') },
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
-        ],
-      )
-    })
-
-    if (!format) return
-
-    try {
-      let fileUri
-      if (format === 'CSV') {
-        fileUri = await generateCSV()
-      }
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri)
-      } else {
-        Alert.alert('Error', 'Sharing is not available on this device.')
-      }
-    } catch (error) {
-      console.error('Error saving file:', error)
-    }
-  }
-
-  // React.useLayoutEffect(() => {
-  //   if (claim) {
-  //     navigation.setOptions({
-  //       title: claim.claimTitle,
-  //       headerRight: () => (
-  //         <Button onPress={handleSave} title="Save" color="#007bff" />
-  //       ),
-  //     })
-  //   }
-  // }, [navigation, claim])
+  const renderSection = (title, content) => (
+    <View style={styles.section}>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.content}>{content}</Text>
+    </View>
+  )
 
   if (!claim) {
     return (
@@ -173,76 +72,23 @@ const SingleClaim = ({ route }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.title}>Location</Text>
-        <Text style={styles.content}>{claim.location}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Date</Text>
-        <Text style={styles.content}>
-          {claim.date?.toDate().toLocaleDateString()}
-        </Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Customer Name</Text>
-        <Text style={styles.content}>{claim.customerName}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Segment</Text>
-        <Text style={styles.content}>{claim.segment}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Application:</Text>
-        <Text style={styles.content}>{claim.application}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Tyre Size:</Text>
-        <Text style={styles.content}>{claim.tyreSize}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Ply Rating:</Text>
-        <Text style={styles.content}>{claim.plyRating}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Brand Name:</Text>
-        <Text style={styles.content}>{claim.brandName}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Company Name:</Text>
-        <Text style={styles.content}>{claim.companyName}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Serial Number:</Text>
-        <Text style={styles.content}>{claim.serialNumber}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Mould No:</Text>
-        <Text style={styles.content}>{claim.mouldNo}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>NSD1:</Text>
-        <Text style={styles.content}>{claim.nsd1}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>NSD2:</Text>
-        <Text style={styles.content}>{claim.nsd2}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>NSD3:</Text>
-        <Text style={styles.content}>{claim.nsd3}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Pattern:</Text>
-        <Text style={styles.content}>{claim.pattern}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Defect Area:</Text>
-        <Text style={styles.content}>{claim.defectArea}</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.title}>Defect Name:</Text>
-        <Text style={styles.content}>{claim.defectName}</Text>
-      </View>
+      {renderSection('Location', claim.location)}
+      {renderSection('Date', claim.date?.toDate().toLocaleDateString())}
+      {renderSection('Customer Name', claim.customerName)}
+      {renderSection('Segment', claim.segment)}
+      {renderSection('Application', claim.application)}
+      {renderSection('Tyre Size', claim.tyreSize)}
+      {renderSection('Ply Rating', claim.plyRating)}
+      {renderSection('Brand Name', claim.brandName)}
+      {renderSection('Company Name', claim.companyName)}
+      {renderSection('Serial Number', claim.serialNumber)}
+      {renderSection('Mould No', claim.mouldNo)}
+      {renderSection('NSD1', claim.nsd1)}
+      {renderSection('NSD2', claim.nsd2)}
+      {renderSection('NSD3', claim.nsd3)}
+      {renderSection('Pattern', claim.pattern)}
+      {renderSection('Defect Area', claim.defectArea)}
+      {renderSection('Defect Name', claim.defectName)}
       <View style={styles.section}>
         <Text style={styles.title}>Photos:</Text>
         <ScrollView horizontal style={styles.photoContainer}>
@@ -251,11 +97,7 @@ const SingleClaim = ({ route }) => {
               key={index}
               onPress={() => handleImagePress(index)}
             >
-              <Image
-                key={index}
-                source={{ uri: photoUri }}
-                style={styles.photo}
-              />
+              <Image source={{ uri: photoUri }} style={styles.photo} />
             </TouchableOpacity>
           ))}
         </ScrollView>

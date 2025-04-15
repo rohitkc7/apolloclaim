@@ -8,8 +8,6 @@ import {
   companyName,
 } from './tyreData'
 
-const defaultTyreSizes = tyreSizeData.map((item) => item.value)
-
 const getTyreSizes = (segment) => {
   if (tyreSizeMapping[segment]) {
     return tyreSizeData.filter((item) =>
@@ -19,70 +17,27 @@ const getTyreSizes = (segment) => {
   return tyreSizeData
 }
 
-const createNsdData = () => {
-  const data = []
-  for (let i = 0; i <= 50; i++) {
-    const value = (i / 100).toFixed(2)
-    const label = value.toString()
-    data.push({ label, value })
-  }
-  return data
-}
-
-const nsdData = {
-  nsd1: createNsdData(),
-  nsd2: createNsdData(),
-  nsd3: createNsdData(),
-}
 const Form1 = ({ formData, onChange }) => {
   const [isFocus, setIsFocus] = useState({
     segment: false,
     tyreSize: false,
     plyRating: false,
   })
-  const [focusState, setFocusState] = useState({
-    nsd1: false,
-    nsd2: false,
-    nsd3: false,
-  })
+
+  const handleNsdChange = (field, value) => {
+    // Directly update form data on change
+    onChange(field, value)
+  }
 
   const handleFocus = (field) => {
     setIsFocus((prev) => ({ ...prev, [field]: true }))
   }
 
-  const handleBlur = (field) => {
-    setIsFocus((prev) => ({ ...prev, [field]: false }))
-  }
-
   const handleChange = (field, value) => {
     onChange(field, value)
   }
-
-  const validateForm2 = () => {
-    const emptyFields = []
-
-    if (!formData.tyreSize) emptyFields.push('Tyre Size')
-    if (!formData.plyRating) emptyFields.push('Ply Rating')
-    if (!formData.companyName) emptyFields.push('Company Name')
-    if (!formData.brandName) emptyFields.push('Brand Name')
-    if (!formData.serialNumber) emptyFields.push('Serial Number')
-    if (!formData.mouldNo) emptyFields.push('Mould No')
-    if (!formData.nsd1) emptyFields.push('NSD 1')
-    if (!formData.nsd2) emptyFields.push('NSD 2')
-    if (!formData.nsd3) emptyFields.push('NSD 3')
-
-    if (emptyFields.length > 0) {
-      const message = `${emptyFields.join(', ')} ${
-        emptyFields.length > 1 ? 'are' : 'is'
-      } required!`
-      Toast.show({
-        text1: 'Error',
-        text2: message,
-        type: 'error',
-      })
-      return false
-    }
-    return true
+  const handleBlur = (field) => {
+    setIsFocus((prev) => ({ ...prev, [field]: false }))
   }
 
   return (
@@ -170,28 +125,16 @@ const Form1 = ({ formData, onChange }) => {
           placeholder="Enter Mould No."
           value={formData.mouldNo}
         />
-        {Object.keys(nsdData).map((field) => (
-          <View key={field}>
+        {/* NSD Input Fields */}
+        {['nsd1', 'nsd2', 'nsd3'].map((field) => (
+          <View key={field} style={styles.inputContainer}>
             <Text style={styles.inputLabel}>{field.toUpperCase()}</Text>
-            <Dropdown
-              style={[
-                styles.dropdown,
-                focusState[field] && { borderColor: 'blue' },
-              ]}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              inputSearchStyle={styles.inputSearchStyle}
-              data={nsdData[field]}
-              search
-              maxHeight={300}
-              labelField="label"
-              valueField="value"
-              placeholder={!focusState[field] ? 'Select item' : '...'}
-              searchPlaceholder="Search..."
-              value={formData[field]}
-              onFocus={() => handleFocus(field)}
-              onBlur={() => handleBlur(field)}
-              onChange={(item) => handleChange(field, item.value)}
+            <TextInput
+              style={styles.input}
+              keyboardType="decimal-pad"
+              placeholder="Enter value"
+              value={formData[field]} // Use formData for values directly
+              onChangeText={(value) => handleNsdChange(field, value)} // Update directly
             />
           </View>
         ))}

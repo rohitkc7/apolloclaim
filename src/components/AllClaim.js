@@ -5,32 +5,43 @@ import {
   SafeAreaView,
   Text,
   Image,
+  Button,
   FlatList,
   TouchableOpacity,
   Alert,
+  Modal,
 } from 'react-native'
-import * as FileSystem from 'expo-file-system'
-import * as Sharing from 'expo-sharing'
 import { useFocusEffect } from '@react-navigation/native'
-
 import { firestore } from '../../firebaseConfig' // Adjusting the path to access firebaseConfig.js
 import { collection, getDocs } from 'firebase/firestore' // Import collection and getDocs
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import { previewData } from './previewHelper'
+import { handleExportData } from './exportHelper'
+import PreviewTable from './previewTable'
 
 const AllClaim = ({ navigation, route }) => {
   const [claims, setClaims] = useState([])
-  const [isCheckboxMode, setCheckboxMode] = useState(false)
-  const [selectedClaims, setSelectedClaims] = useState(new Set())
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedClaims, setSelectedClaims] = useState(new Set())
   const itemsPerPage = 5
+  const [isModalVisible, setModalVisible] = useState(false)
+  const [isDateRangePickerVisible, setDateRangePickerVisible] = useState(false)
+
+  const [fromDate, setFromDate] = useState(new Date())
+  const [toDate, setToDate] = useState(new Date())
+  const [isFromDatePickerVisible, setFromDatePickerVisible] = useState(false)
+  const [isToDatePickerVisible, setToDatePickerVisible] = useState(false)
+  // Add state to manage the preview visibility and data
+  const [previewVisible, setPreviewVisible] = useState(false)
+  const [previewClaims, setPreviewClaims] = useState([])
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchClaims()
     })
     const unsubscribeBlur = navigation.addListener('blur', () => {
-      setCheckboxMode(false)
       setSelectedClaims(new Set())
     })
 
@@ -64,6 +75,41 @@ const AllClaim = ({ navigation, route }) => {
     }
   }
 
+  const openExportPrompt = () => {
+    Alert.alert(
+      'Export Options',
+      'Do you want to export all data or selected data?',
+      [
+        {
+          text: 'All',
+          onPress: () => {
+            setPreviewClaims(claims) // Set the claims for preview
+            setPreviewVisible(true) // Show the preview modal
+          },
+        },
+        {
+          text: 'Selected',
+          onPress: () => setDateRangePickerVisible(true),
+        },
+      ],
+    )
+  }
+
+  const handleDateRangeSelection = () => {
+    const filteredClaims = claims.filter((claim) => {
+      const claimDate = claim.date?.toDate()
+      return claimDate && claimDate >= fromDate && claimDate <= toDate
+    })
+
+    if (filteredClaims.length === 0) {
+      Alert.alert('No Data', 'No claims found in the selected date range.')
+      return
+    }
+
+    // Set the preview claims data and make the preview visible
+    setPreviewClaims(filteredClaims)
+    setPreviewVisible(true) // Show the preview modal
+  }
   const handleViewClaim = (claimId) => {
     navigation.navigate('SingleClaim', { claimId })
   }
@@ -78,74 +124,6 @@ const AllClaim = ({ navigation, route }) => {
     currentPage * itemsPerPage,
   )
 
-  const handleShare = async () => {
-    if (selectedClaims.size === 0) {
-      Alert.alert(
-        'No claims selected',
-        'Please select at least one claim to export.',
-      )
-      return
-    }
-
-    const filteredClaims = claims.filter((claim) =>
-      selectedClaims.has(claim.id),
-    )
-
-    const csv = [
-      [
-        'ID',
-        'Application',
-        'Location',
-        'Customer Name',
-        'Segment',
-        'Tyre Size',
-        'Ply Rating',
-        'Brand Name',
-        'Company Name',
-        'Serial Number',
-        'Mould No',
-        'NSD1',
-        'NSD2',
-        'NSD3',
-        'Pattern',
-        'Defect Area',
-        'Defect Name',
-      ],
-      ...filteredClaims.map((claim) => [
-        claim.id,
-        claim.application,
-        claim.location,
-        claim.customerName,
-        claim.segment,
-        claim.tyreSize,
-        claim.plyRating,
-        claim.brandName,
-        claim.companyName,
-        claim.serialNumber,
-        claim.mouldNo,
-        claim.nsd1,
-        claim.nsd2,
-        claim.nsd3,
-        claim.pattern,
-        claim.defectArea,
-        claim.defectName,
-      ]),
-    ]
-      .map((e) => e.join(','))
-      .join('\n')
-
-    const fileUri = FileSystem.documentDirectory + 'claims.csv'
-    await FileSystem.writeAsStringAsync(fileUri, csv)
-
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(fileUri, {
-        mimeType: 'text/csv',
-        UTI: 'public.comma-separated-values-text',
-      })
-    } else {
-      Alert.alert('Sharing not available', 'Unable to share file.')
-    }
-  }
   const renderPagination = () => (
     <View style={styles.paginationContainer}>
       {currentPage !== 1 && (
@@ -172,13 +150,76 @@ const AllClaim = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}></View>
-      {isCheckboxMode && (
-        <TouchableOpacity style={styles.claimShare} onPress={handleShare}>
-          <Text style={styles.shareText}>Share Selected</Text>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={openExportPrompt}
+        >
+          <Text style={styles.buttonText}>Export</Text>
         </TouchableOpacity>
-      )}
+      </View>
 
+      {isDateRangePickerVisible && (
+        <Modal
+          visible={isDateRangePickerVisible}
+          transparent={true}
+          animationType="slide"
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.datePickerLabel}>Select Date Range</Text>
+            <TouchableOpacity
+              style={styles.datePickerButton}
+              onPress={() => setFromDatePickerVisible(true)}
+            >
+              <Text style={styles.buttonText}>
+                From: {fromDate.toDateString()}
+              </Text>
+            </TouchableOpacity>
+            {isFromDatePickerVisible && (
+              <DateTimePicker
+                value={fromDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  setFromDate(date || fromDate)
+                  setFromDatePickerVisible(false)
+                }}
+              />
+            )}
+
+            <TouchableOpacity
+              style={styles.datePickerButton}
+              onPress={() => setToDatePickerVisible(true)}
+            >
+              <Text style={styles.buttonText}>To: {toDate.toDateString()}</Text>
+            </TouchableOpacity>
+            {isToDatePickerVisible && (
+              <DateTimePicker
+                value={toDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  setToDate(date || toDate)
+                  setToDatePickerVisible(false)
+                }}
+              />
+            )}
+            <Button
+              title="Export Selected Claims"
+              onPress={handleDateRangeSelection}
+            />
+            <Button
+              title="Close"
+              onPress={() => setDateRangePickerVisible(false)}
+            />
+          </View>
+        </Modal>
+      )}
+      <PreviewTable
+        visible={previewVisible}
+        data={previewClaims}
+        onClose={() => setPreviewVisible(false)}
+      />
       {/* Column Headers */}
       <FlatList
         style={styles.claimItems}
@@ -195,13 +236,7 @@ const AllClaim = ({ navigation, route }) => {
               <Text style={styles.cardDetail}>Company: {item.companyName}</Text>
               <Text style={styles.cardDetail}>Brand: {item.brandName}</Text>
             </View>
-            {isCheckboxMode && (
-              <CheckBox
-                style={styles.checkbox}
-                value={selectedItems.includes(item.id)}
-                onValueChange={() => toggleSelection(item.id)}
-              />
-            )}
+
             <TouchableOpacity
               style={styles.viewButton}
               onPress={() => handleViewClaim(item.id)}
@@ -227,7 +262,34 @@ const styles = StyleSheet.create({
     padding: 5,
     margin: 5,
   },
-
+  exportButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+  },
+  modalView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  datePickerLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#FFF',
+  },
+  datePickerButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -123,6 +123,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 1,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+  },
+  menuIcon: {
+    width: 24,
+    height: 24,
+  },
+  profileIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
 })
 
 export default HomeApollo
