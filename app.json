@@ -1,11 +1,6 @@
 {
   "expo": {
     "name": "ApolloClaim",
-    "plugins": [
-      "expo-font",
-      "@react-native-community/datetimepicker",
-      "expo-sqlite"
-    ],
     "slug": "ApolloClaim",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,26 +11,52 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
+    "assetBundlePatterns": ["**/*"],
+    "plugins": [
+      "expo-font",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ApolloClaim needs camera access to photograph tyre defects."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ApolloClaim needs photo library access to attach images to claims."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "ApolloClaim needs photo library access to save captured images.",
+          "savePhotosPermission": "ApolloClaim needs permission to save photos to your library.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.rohitkc7.apolloclaim",
       "infoPlist": {
-        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera.",
-        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone."
-      },
-      "bundleIdentifier": "y"
+        "NSCameraUsageDescription": "ApolloClaim needs camera access to photograph tyre defects.",
+        "NSMicrophoneUsageDescription": "ApolloClaim needs microphone access.",
+        "NSPhotoLibraryUsageDescription": "ApolloClaim needs photo library access to attach images to claims.",
+        "NSPhotoLibraryAddUsageDescription": "ApolloClaim needs permission to save photos to your library."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.rohitkc7.ApolloClaim",
+      "package": "com.rohitkc7.apolloclaim",
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "web": {
