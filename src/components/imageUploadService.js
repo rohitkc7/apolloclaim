@@ -1,23 +1,43 @@
-// imageUploadService.js
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+const CLOUD_NAME    = 'dl2h3cxfu'
+const UPLOAD_PRESET = 'Apollo'
+const UPLOAD_URL    = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`
 
-export const uploadImage = async (uri) => {
-  const storage = getStorage()
-  const filename = uri.substring(uri.lastIndexOf('/') + 1) // Extract filename from URI
-  const storageRef = ref(storage, `images/${filename}`) // Create a reference to the location in storage
+/**
+ * Uploads a single local image URI to Cloudinary.
+ * Returns a permanent public HTTPS URL accessible from any device.
+ */
+export const uploadImage = async (localUri) => {
+  const formData = new FormData()
 
-  try {
-    // Convert the image URI to a Blob
-    const response = await fetch(uri)
-    const blob = await response.blob()
+  formData.append('file', {
+    uri: localUri,
+    type: 'image/jpeg',
+    name: `photo_${Date.now()}.jpg`,
+  })
+  formData.append('upload_preset', UPLOAD_PRESET)
+  formData.append('folder', 'claims')
 
-    // Upload the image Blob to Firebase Storage
-    await uploadBytes(storageRef, blob)
+  const response = await fetch(UPLOAD_URL, {
+    method: 'POST',
+    body: formData,
+  })
 
-    // Get the public URL of the uploaded image
-    const downloadURL = await getDownloadURL(storageRef)
-    return downloadURL // Return the public URL
-  } catch (error) {
-    throw error // Rethrow the error to handle it in the calling function
+  const data = await response.json()
+
+  if (!response.ok) {
+    // Log the full response to help diagnose config issues
+    console.error('Cloudinary error response:', JSON.stringify(data))
+    throw new Error(data.error?.message || 'Cloudinary upload failed')
   }
+
+  return data.secure_url  // permanent HTTPS URL, stored in Firestore
+}
+
+/**
+ * Uploads multiple local photo URIs to Cloudinary in parallel.
+ * Returns an array of permanent public URLs in the same order.
+ */
+export const uploadPhotos = async (localUris) => {
+  if (!localUris || localUris.length === 0) return []
+  return Promise.all(localUris.map(uploadImage))
 }

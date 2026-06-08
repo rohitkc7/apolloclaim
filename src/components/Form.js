@@ -1,121 +1,137 @@
-import React, { useState } from 'react'
-import { SafeAreaView, View, Text, StyleSheet, TextInput } from 'react-native'
+import React, { useRef } from 'react'
+import { View, Text, StyleSheet, TextInput, ScrollView } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
 import { segmentData } from './tyreData'
 
+const Field = ({ label, children }) => (
+  <View style={styles.fieldWrap}>
+    <Text style={styles.label}>{label}</Text>
+    {children}
+  </View>
+)
+
+const StyledInput = ({
+  forwardRef,
+  label,
+  returnKeyType = 'next',
+  onSubmitEditing,
+  ...props
+}) => (
+  <Field label={label}>
+    <TextInput
+      ref={forwardRef}
+      style={styles.input}
+      placeholderTextColor="#bbb"
+      returnKeyType={returnKeyType}
+      blurOnSubmit={returnKeyType === 'done'}
+      onSubmitEditing={onSubmitEditing}
+      {...props}
+    />
+  </Field>
+)
+
 const Form = ({ formData, onChange }) => {
-  const [isFocus, setIsFocus] = useState({
-    segment: false,
-    tyreSize: false,
-    plyRating: false,
-  })
-
-  const handleFocus = (field) => {
-    setIsFocus((prev) => ({ ...prev, [field]: true }))
-  }
-
-  const handleBlur = (field) => {
-    setIsFocus((prev) => ({ ...prev, [field]: false }))
-  }
-
-  const handleChange = (field, value) => {
-    onChange(field, value)
-  }
-
+  const customerRef = useRef(null)
+  const applicationRef = useRef(null)
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View>
-        <Text style={styles.inputLabel}>Location</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => handleChange('location', text)}
-          placeholder="Enter Location"
-          value={formData.location}
-        />
-        <Text style={styles.inputLabel}>CustomerName</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => handleChange('customerName', text)}
-          placeholder="Enter Customer Name"
-          value={formData.customerName}
-        />
-        <Text style={styles.inputLabel}>Segment</Text>
+    <View style={styles.card}>
+      <StyledInput
+        label="Location"
+        placeholder="e.g. Birgunj,Madhesh Province"
+        value={formData.location}
+        onChangeText={(v) => onChange('location', v)}
+        returnKeyType="next"
+        onSubmitEditing={() => customerRef.current?.focus()}
+      />
+
+      <StyledInput
+        forwardRef={customerRef}
+        label="Customer Name"
+        placeholder="Full name of the customer"
+        value={formData.customerName}
+        onChangeText={(v) => onChange('customerName', v)}
+        returnKeyType="next"
+        onSubmitEditing={() => applicationRef.current?.focus()}
+      />
+
+      <Field label="Segment">
         <Dropdown
-          style={[styles.dropdown, isFocus.segment && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
+          style={styles.dropdown}
+          placeholderStyle={styles.placeholder}
+          selectedTextStyle={styles.selectedText}
+          inputSearchStyle={styles.searchInput}
+          containerStyle={styles.dropdownContainer}
           data={segmentData}
           search
-          maxHeight={300}
+          maxHeight={280}
           labelField="label"
           valueField="value"
-          placeholder={!isFocus.segment ? 'Select item' : '...'}
+          placeholder="Select segment"
           searchPlaceholder="Search..."
           value={formData.segment}
-          onFocus={() => handleFocus('segment')}
-          onBlur={() => handleBlur('segment')}
-          onChange={(item) => handleChange('segment', item.value)}
+          onChange={(item) => onChange('segment', item.value)}
         />
+      </Field>
 
-        <Text style={styles.inputLabel}>Application</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => handleChange('application', text)}
-          placeholder="Enter Application Name"
-          value={formData.application}
-        />
-      </View>
-    </SafeAreaView>
+      <StyledInput
+        forwardRef={applicationRef}
+        label="Application"
+        placeholder="e.g. Long Haul, City Bus"
+        value={formData.application}
+        onChangeText={(v) => onChange('application', v)}
+        returnKeyType="done"
+      />
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    // paddingTop: Platform.OS === 'android' ? 25 : 0,
-    paddingHorizontal: 20,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  formContainer: {
-    flex: 1,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
+  fieldWrap: { marginBottom: 18 },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#555',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    fontSize: 16,
+    height: 48,
+    borderWidth: 1.5,
+    borderColor: '#e8e8e8',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: '#1a1a1a',
+    backgroundColor: '#fafafa',
   },
   dropdown: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    marginBottom: 20,
+    height: 48,
+    borderWidth: 1.5,
+    borderColor: '#e8e8e8',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#fafafa',
   },
-  focused: {
-    borderColor: 'blue',
+  dropdownContainer: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e8e8e8',
   },
-  placeholderStyle: {
-    fontSize: 16,
-  },
-  selectedTextStyle: {
-    fontSize: 16,
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-  },
+  placeholder: { fontSize: 15, color: '#bbb' },
+  selectedText: { fontSize: 15, color: '#1a1a1a' },
+  searchInput: { height: 40, fontSize: 14, borderColor: '#eee' },
 })
 
 export default Form

@@ -1,192 +1,176 @@
-import React, { useState } from 'react'
-import { SafeAreaView, View, Text, StyleSheet, TextInput } from 'react-native'
+import React, { useRef } from 'react'
+import { View, Text, StyleSheet, TextInput } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
-import {
-  tyreSizeData,
-  tyreSizeMapping,
-  plyRating,
-  companyName,
-} from './tyreData'
+import { tyreSizeData, tyreSizeMapping, plyRating, companyName } from './tyreData'
 
-const getTyreSizes = (segment) => {
-  if (tyreSizeMapping[segment]) {
-    return tyreSizeData.filter((item) =>
-      tyreSizeMapping[segment].includes(item.value),
-    )
-  }
-  return tyreSizeData
-}
+const getTyreSizes = (segment) =>
+  tyreSizeMapping[segment] ? tyreSizeData.filter(i => tyreSizeMapping[segment].includes(i.value)) : tyreSizeData
+
+const Field = ({ label, children }) => (
+  <View style={styles.fieldWrap}>
+    <Text style={styles.label}>{label}</Text>
+    {children}
+  </View>
+)
+
+const StyledInput = ({ forwardRef, label, returnKeyType = 'next', onSubmitEditing, ...props }) => (
+  <Field label={label}>
+    <TextInput
+      ref={forwardRef}
+      style={styles.input}
+      placeholderTextColor="#bbb"
+      returnKeyType={returnKeyType}
+      blurOnSubmit={returnKeyType === 'done'}
+      onSubmitEditing={onSubmitEditing}
+      {...props}
+    />
+  </Field>
+)
+
+const DropField = ({ label, data, value, onChange, placeholder }) => (
+  <Field label={label}>
+    <Dropdown
+      style={styles.dropdown}
+      placeholderStyle={styles.placeholder}
+      selectedTextStyle={styles.selectedText}
+      inputSearchStyle={styles.searchInput}
+      containerStyle={styles.dropdownContainer}
+      data={data}
+      search
+      maxHeight={280}
+      labelField="label"
+      valueField="value"
+      placeholder={placeholder || 'Select item'}
+      searchPlaceholder="Search..."
+      value={value}
+      onChange={item => onChange(item.value)}
+    />
+  </Field>
+)
 
 const Form1 = ({ formData, onChange }) => {
-  const [isFocus, setIsFocus] = useState({
-    segment: false,
-    tyreSize: false,
-    plyRating: false,
-  })
-
-  const handleNsdChange = (field, value) => {
-    // Directly update form data on change
-    onChange(field, value)
-  }
-
-  const handleFocus = (field) => {
-    setIsFocus((prev) => ({ ...prev, [field]: true }))
-  }
-
-  const handleChange = (field, value) => {
-    onChange(field, value)
-  }
-  const handleBlur = (field) => {
-    setIsFocus((prev) => ({ ...prev, [field]: false }))
-  }
+  const brandRef  = useRef(null)
+  const serialRef = useRef(null)
+  const mouldRef  = useRef(null)
+  const nsd2Ref   = useRef(null)
+  const nsd3Ref   = useRef(null)
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View>
-        <Text style={styles.inputLabel}>Tyre Size</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus.tyreSize && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={getTyreSizes(formData.segment)}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus.tyreSize ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          value={formData.tyreSize}
-          onFocus={() => handleFocus('tyreSize')}
-          onBlur={() => handleBlur('tyreSize')}
-          onChange={(item) => handleChange('tyreSize', item.value)}
-        />
+    <View style={styles.card}>
+      <DropField
+        label="Tyre Size"
+        data={getTyreSizes(formData.segment)}
+        value={formData.tyreSize}
+        onChange={v => onChange('tyreSize', v)}
+        placeholder="Select tyre size"
+      />
 
-        <Text style={styles.inputLabel}>Ply Rating</Text>
-        <Dropdown
-          style={[
-            styles.dropdown,
-            isFocus.plyRating && { borderColor: 'blue' },
-          ]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={plyRating}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus.plyRating ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          value={formData.plyRating}
-          onFocus={() => handleFocus('plyRating')}
-          onBlur={() => handleBlur('plyRating')}
-          onChange={(item) => handleChange('plyRating', item.value)}
-        />
-        <Text style={styles.inputLabel}>Company Name</Text>
-        <Dropdown
-          style={[
-            styles.dropdown,
-            isFocus.companyName && { borderColor: 'blue' },
-          ]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          data={companyName}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="value"
-          placeholder={!isFocus.plyRating ? 'Select item' : '...'}
-          searchPlaceholder="Search..."
-          value={formData.companyName}
-          onFocus={() => handleFocus('companyName')}
-          onBlur={() => handleBlur('companyName')}
-          onChange={(item) => handleChange('companyName', item.value)}
-        />
-        <Text style={styles.inputLabel}>Brand Name</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => handleChange('brandName', text)}
-          placeholder="Enter Brand Name"
-          value={formData.brandName}
-        />
-        <Text style={styles.inputLabel}>Serial Number</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => onChange('serialNumber', text)}
-          placeholder="Enter Serial Number"
-          value={formData.serialNumber}
-        />
-        <Text style={styles.inputLabel}>Mould No.</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => onChange('mouldNo', text)}
-          placeholder="Enter Mould No."
-          value={formData.mouldNo}
-        />
-        {/* NSD Input Fields */}
-        {['nsd1', 'nsd2', 'nsd3'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>{field.toUpperCase()}</Text>
+      <DropField
+        label="Ply Rating"
+        data={plyRating}
+        value={formData.plyRating}
+        onChange={v => onChange('plyRating', v)}
+        placeholder="Select ply rating"
+      />
+
+      <DropField
+        label="Company Name"
+        data={companyName}
+        value={formData.companyName}
+        onChange={v => onChange('companyName', v)}
+        placeholder="Select company"
+      />
+
+      <StyledInput
+        forwardRef={brandRef}
+        label="Brand Name"
+        placeholder="e.g. Apollo, CEAT"
+        value={formData.brandName}
+        onChangeText={v => onChange('brandName', v)}
+        onSubmitEditing={() => serialRef.current?.focus()}
+      />
+
+      <StyledInput
+        forwardRef={serialRef}
+        label="Serial Number"
+        placeholder="Tyre serial number"
+        value={formData.serialNumber}
+        onChangeText={v => onChange('serialNumber', v)}
+        onSubmitEditing={() => mouldRef.current?.focus()}
+      />
+
+      <StyledInput
+        forwardRef={mouldRef}
+        label="Mould No."
+        placeholder="Mould number"
+        value={formData.mouldNo}
+        onChangeText={v => onChange('mouldNo', v)}
+        onSubmitEditing={() => {}}
+      />
+
+      {/* NSD row */}
+      <Field label="NSD Readings (mm)">
+        <View style={styles.nsdRow}>
+          {[
+            { field: 'nsd1', placeholder: 'NSD 1', ref: null,    next: nsd2Ref },
+            { field: 'nsd2', placeholder: 'NSD 2', ref: nsd2Ref, next: nsd3Ref },
+            { field: 'nsd3', placeholder: 'NSD 3', ref: nsd3Ref, next: null    },
+          ].map(({ field, placeholder, ref, next }) => (
             <TextInput
-              style={styles.input}
+              key={field}
+              ref={ref}
+              style={styles.nsdInput}
+              placeholder={placeholder}
+              placeholderTextColor="#bbb"
               keyboardType="decimal-pad"
-              placeholder="Enter value"
-              value={formData[field]} // Use formData for values directly
-              onChangeText={(value) => handleNsdChange(field, value)} // Update directly
+              returnKeyType={next ? 'next' : 'done'}
+              blurOnSubmit={!next}
+              value={formData[field]}
+              onChangeText={v => onChange(field, v)}
+              onSubmitEditing={() => next?.current?.focus()}
             />
-          </View>
-        ))}
-      </View>
-    </SafeAreaView>
+          ))}
+        </View>
+      </Field>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white',
-    // paddingTop: Platform.OS === 'android' ? 25 : 0,
-    paddingHorizontal: 20,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  formContainer: {
-    flex: 1,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 5,
+  fieldWrap: { marginBottom: 18 },
+  label: {
+    fontSize: 13, fontWeight: '600', color: '#555',
+    marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.4,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    fontSize: 16,
+    height: 48, borderWidth: 1.5, borderColor: '#e8e8e8',
+    borderRadius: 10, paddingHorizontal: 14, fontSize: 15,
+    color: '#1a1a1a', backgroundColor: '#fafafa',
   },
   dropdown: {
-    height: 50,
-    borderColor: 'gray',
-    borderWidth: 0.5,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    marginBottom: 20,
+    height: 48, borderWidth: 1.5, borderColor: '#e8e8e8',
+    borderRadius: 10, paddingHorizontal: 14, backgroundColor: '#fafafa',
   },
-  focused: {
-    borderColor: 'blue',
-  },
-  placeholderStyle: {
-    fontSize: 16,
-  },
-  selectedTextStyle: {
-    fontSize: 16,
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
+  dropdownContainer: { borderRadius: 12, borderWidth: 1, borderColor: '#e8e8e8' },
+  placeholder: { fontSize: 15, color: '#bbb' },
+  selectedText: { fontSize: 15, color: '#1a1a1a' },
+  searchInput: { height: 40, fontSize: 14, borderColor: '#eee' },
+
+  nsdRow: { flexDirection: 'row', gap: 10 },
+  nsdInput: {
+    flex: 1, height: 48, borderWidth: 1.5, borderColor: '#e8e8e8',
+    borderRadius: 10, paddingHorizontal: 10, fontSize: 15,
+    color: '#1a1a1a', backgroundColor: '#fafafa', textAlign: 'center',
   },
 })
 

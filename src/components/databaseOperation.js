@@ -1,7 +1,6 @@
-import { firestore } from '../../firebaseConfig' // Adjust the import based on your file structure
+import { firestore } from '../../firebaseConfig'
 import {
   collection,
-  addDoc,
   doc,
   updateDoc,
   runTransaction,
@@ -9,88 +8,53 @@ import {
   setDoc,
 } from 'firebase/firestore'
 
-// Function to insert a new claim into Firestore
+const COUNTER_REF = doc(firestore, 'Counters', 'claims')
+
 const insertClaim = async (formData) => {
-  try {
-    const {
-      location,
-      customerName,
-      segment,
-      application,
-      tyreSize,
-      plyRating,
-      brandName,
-      companyName,
-      serialNumber,
-      mouldNo,
-      nsd1,
-      nsd2,
-      nsd3,
-      pattern,
-      defectArea,
-      defectName,
-      photos,
+  const {
+    location, customerName, segment, application, tyreSize,
+    plyRating, brandName, companyName, serialNumber, mouldNo,
+    nsd1, nsd2, nsd3, pattern, defectArea, defectName, photos,
+    date, userId,
+  } = formData
+
+  // Counter read AND increment are both inside the transaction
+  // to prevent two simultaneous submissions getting the same ID.
+  let newId
+  await runTransaction(firestore, async (transaction) => {
+    const counterSnap = await transaction.get(COUNTER_REF)
+    const lastId = counterSnap.exists() ? (counterSnap.data().lastId || 0) : 0
+    newId = lastId + 1
+
+    const claimRef = doc(firestore, 'claims', newId.toString())
+    transaction.set(claimRef, {
+      location, customerName, segment, application, tyreSize,
+      plyRating, brandName, companyName, serialNumber, mouldNo,
+      nsd1, nsd2, nsd3, pattern, defectArea, defectName,
+      photos,   // array of Cloudinary URLs
+      date,
       userId,
-    } = formData
-
-    const photosString = JSON.stringify(photos)
-
-    const counterRef = doc(
-      firestore,
-      'Counters',
-      'your-auto-generated-document-id',
-    ) // Replace with your actual document ID
-
-    // Read the current lastId outside of the transaction
-    const counterDoc = await getDoc(counterRef)
-
-    let lastId
-    if (!counterDoc.exists()) {
-      // If the document does not exist, initialize it
-
-      await setDoc(counterRef, { lastId: 0 })
-      lastId = 0 // Initialize lastId
-    } else {
-      lastId = counterDoc.data().lastId || 0 // Default to 0 if lastId is undefined
-    }
-
-    // Increment the lastId for the new claim
-    lastId += 1
-
-    // Run a transaction to create the new claim and update the counter
-    await runTransaction(firestore, async (transaction) => {
-      // Create the new claim document with the new sequential ID
-      const claimRef = doc(firestore, 'claims', lastId.toString())
-      await transaction.set(claimRef, {
-        location,
-        customerName,
-        segment,
-        application,
-        tyreSize,
-        plyRating,
-        brandName,
-        companyName,
-        serialNumber,
-        mouldNo,
-        nsd1,
-        nsd2,
-        nsd3,
-        pattern,
-        defectArea,
-        defectName,
-        photos: photosString,
-        date: new Date(),
-        userId,
-      })
-
-      // Update the counter document with the new last ID
-      await transaction.update(counterRef, { lastId })
     })
+    transaction.set(COUNTER_REF, { lastId: newId })
+  })
 
-    return lastId.toString() // Return the new sequential ID
-  } catch (error) {
-    throw error
-  }
+  return newId.toString()
 }
 
-export { insertClaim }
+const updateClaim = async (claimId, formData) => {
+  const {
+    location, customerName, segment, application, tyreSize,
+    plyRating, brandName, companyName, serialNumber, mouldNo,
+    nsd1, nsd2, nsd3, pattern, defectArea, defectName, photos,
+  } = formData
+
+  const claimRef = doc(firestore, 'claims', claimId.toString())
+  await updateDoc(claimRef, {
+    location, customerName, segment, application, tyreSize,
+    plyRating, brandName, companyName, serialNumber, mouldNo,
+    nsd1, nsd2, nsd3, pattern, defectArea, defectName,
+    photos,   // array of Cloudinary URLs (not JSON string)
+  })
+}
+
+export { insertClaim, updateClaim }

@@ -5,8 +5,8 @@ import {
   ScrollView,
   Dimensions,
   StyleSheet,
-  Image,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { BarChart, PieChart } from 'react-native-chart-kit'
 
 const FitmentTracking = () => {
@@ -51,6 +51,7 @@ const FitmentTracking = () => {
   ]
 
   return (
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Fitment Tracking Analysis</Text>
 
@@ -94,14 +95,15 @@ const FitmentTracking = () => {
         absolute
       />
     </ScrollView>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#f5f5f5' },
   container: {
     flex: 1,
     padding: 15,
-    backgroundColor: '#f5f5f5',
   },
   title: {
     fontSize: 24,
