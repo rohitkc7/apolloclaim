@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   StyleSheet, View, Text, FlatList, TouchableOpacity,
-  Modal, TextInput, ActivityIndicator, Dimensions,
+  Modal, TextInput, ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native'
@@ -12,7 +12,6 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import PreviewTable from './previewTable'
 
 const ITEMS_PER_PAGE = 8
-const { width } = Dimensions.get('window')
 
 const fmtDate = (firestoreTs) => {
   if (!firestoreTs) return '—'

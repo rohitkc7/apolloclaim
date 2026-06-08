@@ -25,8 +25,6 @@ export const uploadImage = async (localUri) => {
   const data = await response.json()
 
   if (!response.ok) {
-    // Log the full response to help diagnose config issues
-    console.error('Cloudinary error response:', JSON.stringify(data))
     throw new Error(data.error?.message || 'Cloudinary upload failed')
   }
 

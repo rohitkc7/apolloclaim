@@ -64,8 +64,7 @@ const HomeApollo = ({ navigation }) => {
     const emailName = user.email?.split('@')[0] ?? ''
     setUsername(emailName.charAt(0).toUpperCase() + emailName.slice(1))
 
-    // Count this user's claims from last 30 days
-    const since = new Date(); since.setDate(since.getDate() - 30)
+    // Count all claims for this user
     getDocs(query(
       collection(firestore, 'claims'),
       where('userId', '==', user.uid),

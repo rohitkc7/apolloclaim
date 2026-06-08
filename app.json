@@ -2,8 +2,11 @@
   "expo": {
     "name": "ApolloClaim",
     "slug": "ApolloClaim",
-    "version": "1.0.0",
+    "owner": "rohitkc7",
+    "version": "1.0.1",
     "orientation": "portrait",
+    "scheme": "apolloclaim",
+    "newArchEnabled": true,
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {

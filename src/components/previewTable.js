@@ -8,13 +8,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Dimensions,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { handleExportData } from './exportHelper'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 
-const { width } = Dimensions.get('window')
 
 const COLUMNS = [
   { key: 'id',           label: 'ID',            width: 60  },
