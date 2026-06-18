@@ -9,6 +9,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { auth, firestore } from '../../firebaseConfig'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
+import { ADMIN_EMAIL } from '../context/UserContext'
 
 const Signup = ({ navigation }) => {
   const [username, setUsername] = useState('')
@@ -40,9 +41,12 @@ const Signup = ({ navigation }) => {
     setLoading(true)
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password)
+      const isAdmin = email.trim().toLowerCase() === ADMIN_EMAIL
       await setDoc(doc(firestore, 'Users', user.uid), {
         username: username.trim(),
         email: email.trim(),
+        role: isAdmin ? 'admin' : 'user',
+        approved: isAdmin,
         createdAt: new Date().toISOString(),
       })
       // onAuthStateChanged in App.js switches to main app automatically

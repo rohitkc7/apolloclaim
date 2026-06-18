@@ -3,20 +3,21 @@ LogBox.ignoreLogs([
   'Due to changes in Androids permission requirements, Expo Go can no longer provide full access to the media library',
 ])
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import {
   View, Text, TouchableOpacity, StyleSheet,
   Image, ActivityIndicator,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { NavigationContainer, DrawerActions } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import Toast from 'react-native-toast-message'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
 
 import { auth } from './firebaseConfig'
+import { UserProvider, useUser } from './src/context/UserContext'
+
 import HomeApollo      from './src/components/HomeApollo'
 import AllClaim        from './src/components/AllClaim'
 import AddClaim        from './src/components/AddClaim'
@@ -27,9 +28,11 @@ import FitmentTracking from './src/components/FitmentTracking'
 import Profile         from './src/components/Profile'
 import Login           from './src/components/Login'
 import Signup          from './src/components/Signup'
+import AdminPanel      from './src/components/AdminPanel'
+import PendingApproval from './src/components/PendingApproval'
 
-const Drawer = createDrawerNavigator()
-const Stack  = createStackNavigator()
+const Drawer    = createDrawerNavigator()
+const Stack     = createStackNavigator()
 const AuthStack = createStackNavigator()
 
 // ─── Navigators ──────────────────────────────────────────────────────────────
@@ -58,9 +61,9 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 )
 
-// ─── Custom Drawer Content ────────────────────────────────────────────────────
+// ─── Drawer items ─────────────────────────────────────────────────────────────
 
-const DRAWER_ITEMS = [
+const BASE_ITEMS = [
   { label: 'Home',                 screen: 'Home',                 icon: 'home'          },
   { label: 'Scrap Analysis',       screen: 'Scrap Analysis',       icon: 'assignment-add' },
   { label: 'Complaint Management', screen: 'Complaint Management', icon: 'list-alt'      },
@@ -68,13 +71,19 @@ const DRAWER_ITEMS = [
   { label: 'Fitment Survey',       screen: 'Fitment Survey',       icon: 'fact-check'    },
   { label: 'Fitment Tracking',     screen: 'Fitment Tracking',     icon: 'track-changes' },
 ]
+const ADMIN_ITEM = { label: 'User Management', screen: 'User Management', icon: 'admin-panel-settings' }
+
+// ─── Custom Drawer Content ────────────────────────────────────────────────────
 
 const CustomDrawer = (props) => {
   const { state, navigation } = props
+  const { authUser, userProfile, isAdmin } = useUser()
   const activeRouteName = state.routes[state.index]?.name
-  const user = auth.currentUser
-  const displayName = user?.email?.split('@')[0] ?? 'User'
-  const initials    = displayName.slice(0, 2).toUpperCase()
+
+  const displayName = userProfile?.username || authUser?.email?.split('@')[0] || 'User'
+  const initials    = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  const drawerItems = isAdmin ? [...BASE_ITEMS, ADMIN_ITEM] : BASE_ITEMS
 
   const handleLogout = () => {
     signOut(auth)
@@ -83,7 +92,7 @@ const CustomDrawer = (props) => {
 
   return (
     <View style={styles.drawerRoot}>
-      {/* Header */}
+      {/* Purple header */}
       <View style={styles.drawerHeader}>
         <Image
           source={require('./assets/apollologo-1.png')}
@@ -91,12 +100,20 @@ const CustomDrawer = (props) => {
           resizeMode="contain"
         />
         <View style={styles.drawerUser}>
-          <View style={styles.drawerAvatar}>
+          <View style={[styles.drawerAvatar, isAdmin && styles.drawerAvatarAdmin]}>
             <Text style={styles.drawerAvatarText}>{initials}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.drawerUserName} numberOfLines={1}>{displayName}</Text>
-            <Text style={styles.drawerUserEmail} numberOfLines={1}>{user?.email}</Text>
+            <View style={styles.drawerNameRow}>
+              <Text style={styles.drawerUserName} numberOfLines={1}>{displayName}</Text>
+              {isAdmin && (
+                <View style={styles.drawerAdminBadge}>
+                  <MaterialIcons name="shield" size={9} color="#5C2C92" />
+                  <Text style={styles.drawerAdminBadgeText}>ADMIN</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.drawerUserEmail} numberOfLines={1}>{authUser?.email}</Text>
           </View>
         </View>
       </View>
@@ -107,22 +124,31 @@ const CustomDrawer = (props) => {
         contentContainerStyle={styles.drawerScroll}
         showsVerticalScrollIndicator={false}
       >
-        {DRAWER_ITEMS.map((item) => {
+        {drawerItems.map((item) => {
           const isActive = activeRouteName === item.screen
+          const isAdminItem = item.screen === 'User Management'
           return (
             <TouchableOpacity
               key={item.screen}
               style={[styles.drawerItem, isActive && styles.drawerItemActive]}
               onPress={() => navigation.navigate(item.screen)}
             >
-              <View style={[styles.drawerItemIcon, isActive && styles.drawerItemIconActive]}>
+              <View style={[
+                styles.drawerItemIcon,
+                isActive && styles.drawerItemIconActive,
+                isAdminItem && styles.drawerItemIconAdmin,
+              ]}>
                 <MaterialIcons
                   name={item.icon}
                   size={20}
-                  color={isActive ? '#fff' : '#5C2C92'}
+                  color={isActive ? '#fff' : isAdminItem ? '#1565C0' : '#5C2C92'}
                 />
               </View>
-              <Text style={[styles.drawerItemLabel, isActive && styles.drawerItemLabelActive]}>
+              <Text style={[
+                styles.drawerItemLabel,
+                isActive && styles.drawerItemLabelActive,
+                isAdminItem && styles.drawerItemLabelAdmin,
+              ]}>
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -134,7 +160,10 @@ const CustomDrawer = (props) => {
       <View style={styles.drawerFooter}>
         <TouchableOpacity
           style={styles.drawerFooterItem}
-          onPress={() => { navigation.navigate('Profile'); navigation.dispatch(DrawerActions.closeDrawer()) }}
+          onPress={() => {
+            navigation.navigate('Profile')
+            navigation.dispatch(DrawerActions.closeDrawer())
+          }}
         >
           <MaterialIcons name="person-outline" size={20} color="#555" />
           <Text style={styles.drawerFooterLabel}>Profile</Text>
@@ -166,22 +195,19 @@ const DrawerNavigator = () => (
     <Drawer.Screen name="Fitment Survey"       component={Fitment} />
     <Drawer.Screen name="Fitment Tracking"     component={FitmentTracking} />
     <Drawer.Screen name="Profile"              component={Profile} />
+    <Drawer.Screen name="User Management"      component={AdminPanel} />
   </Drawer.Navigator>
 )
 
-// ─── Root App ─────────────────────────────────────────────────────────────────
+// ─── App root (reads context) ─────────────────────────────────────────────────
 
-const App = () => {
-  const [user, setUser]       = useState(undefined) // undefined = still checking
+const AppRoot = () => {
+  const { authUser, isApproved, loadingProfile } = useUser()
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, setUser)
-    return unsub
-  }, [])
-
-  if (user === undefined) {
+  // Still resolving auth state or Firestore profile
+  if (authUser === undefined || (authUser !== null && loadingProfile)) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f8' }}>
+      <View style={styles.splash}>
         <ActivityIndicator size="large" color="#5C2C92" />
       </View>
     )
@@ -189,15 +215,27 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      {user ? <DrawerNavigator /> : <AuthNavigator />}
+      {!authUser
+        ? <AuthNavigator />
+        : !isApproved
+          ? <PendingApproval />
+          : <DrawerNavigator />}
       <Toast />
     </NavigationContainer>
   )
 }
 
+const App = () => (
+  <UserProvider>
+    <AppRoot />
+  </UserProvider>
+)
+
 // ─── Drawer Styles ────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  splash: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f8' },
+
   drawerRoot: {
     flex: 1, backgroundColor: '#fff',
     borderTopRightRadius: 24, borderBottomRightRadius: 24,
@@ -206,16 +244,23 @@ const styles = StyleSheet.create({
   drawerHeader: {
     backgroundColor: '#5C2C92', paddingTop: 56, paddingHorizontal: 20, paddingBottom: 20,
   },
-  drawerLogo:  { width: 140, height: 50, marginBottom: 20 },
-  drawerUser:  { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  drawerLogo: { width: 140, height: 50, marginBottom: 20 },
+  drawerUser: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   drawerAvatar: {
     width: 42, height: 42, borderRadius: 21,
     backgroundColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center', justifyContent: 'center',
   },
-  drawerAvatarText: { fontSize: 16, fontWeight: '800', color: '#fff' },
-  drawerUserName:   { fontSize: 15, fontWeight: '700', color: '#fff' },
-  drawerUserEmail:  { fontSize: 12, color: 'rgba(255,255,255,0.65)', marginTop: 2 },
+  drawerAvatarAdmin: { backgroundColor: 'rgba(255,255,255,0.35)', borderWidth: 1.5, borderColor: '#fff' },
+  drawerAvatarText:  { fontSize: 16, fontWeight: '800', color: '#fff' },
+  drawerNameRow:     { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
+  drawerUserName:    { fontSize: 15, fontWeight: '700', color: '#fff', flexShrink: 1 },
+  drawerAdminBadge:  {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: '#fff', borderRadius: 8, paddingHorizontal: 5, paddingVertical: 2,
+  },
+  drawerAdminBadgeText: { fontSize: 9, fontWeight: '800', color: '#5C2C92', letterSpacing: 0.4 },
+  drawerUserEmail:      { fontSize: 12, color: 'rgba(255,255,255,0.65)' },
 
   drawerScroll: { paddingHorizontal: 12, paddingTop: 12 },
   drawerItem: {
@@ -229,8 +274,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0e8ff', alignItems: 'center', justifyContent: 'center',
   },
   drawerItemIconActive: { backgroundColor: '#5C2C92' },
+  drawerItemIconAdmin:  { backgroundColor: '#e3f2fd' },
   drawerItemLabel:       { fontSize: 14, color: '#333', fontWeight: '500' },
   drawerItemLabelActive: { color: '#5C2C92', fontWeight: '700' },
+  drawerItemLabelAdmin:  { color: '#1565C0', fontWeight: '600' },
 
   drawerFooter: {
     borderTopWidth: 1, borderTopColor: '#f0f0f0',

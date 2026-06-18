@@ -6,10 +6,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native'
 import { firestore } from '../../firebaseConfig'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import PreviewTable from './previewTable'
+import { useUser } from '../context/UserContext'
 
 const ITEMS_PER_PAGE = 8
 
@@ -28,7 +29,7 @@ const Pill = ({ label, color = '#5C2C92' }) => (
   </View>
 )
 
-const ClaimCard = ({ item, onView }) => (
+const ClaimCard = ({ item, onView, submitter }) => (
   <View style={styles.card}>
     <View style={styles.cardTop}>
       <View style={styles.issueBadge}>
@@ -41,8 +42,8 @@ const ClaimCard = ({ item, onView }) => (
     <Text style={styles.companyName}>{item.companyName || ''}</Text>
 
     <View style={styles.pillRow}>
-      {item.segment   && <Pill label={item.segment}   color="#5C2C92" />}
-      {item.tyreSize  && <Pill label={item.tyreSize}  color="#1565C0" />}
+      {item.segment    && <Pill label={item.segment}    color="#5C2C92" />}
+      {item.tyreSize   && <Pill label={item.tyreSize}   color="#1565C0" />}
       {item.defectArea && <Pill label={item.defectArea} color="#B71C1C" />}
     </View>
 
@@ -56,26 +57,59 @@ const ClaimCard = ({ item, onView }) => (
         <MaterialIcons name="arrow-forward" size={14} color="#5C2C92" />
       </TouchableOpacity>
     </View>
+
+    {/* Admin-only: show who submitted this claim */}
+    {submitter && (
+      <View style={styles.submitterRow}>
+        <MaterialIcons name="person-outline" size={12} color="#1565C0" />
+        <Text style={styles.submitterText}>Submitted by {submitter}</Text>
+      </View>
+    )}
   </View>
 )
 
 const AllClaim = ({ navigation }) => {
-  const [claims, setClaims]           = useState([])
-  const [loading, setLoading]         = useState(true)
-  const [search, setSearch]           = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
+  const { authUser, isAdmin }              = useUser()
+  const [claims, setClaims]               = useState([])
+  const [userMap, setUserMap]             = useState({})   // uid → display name (admin only)
+  const [loading, setLoading]             = useState(true)
+  const [search, setSearch]               = useState('')
+  const [currentPage, setCurrentPage]     = useState(1)
   const [previewVisible, setPreviewVisible]   = useState(false)
   const [previewClaims, setPreviewClaims]     = useState([])
   const [filterVisible, setFilterVisible]     = useState(false)
-  const [fromDate, setFromDate]       = useState(new Date(Date.now() - 30 * 864e5))
-  const [toDate, setToDate]           = useState(new Date())
+  const [fromDate, setFromDate]           = useState(new Date(Date.now() - 30 * 864e5))
+  const [toDate, setToDate]               = useState(new Date())
   const [showFromPicker, setShowFromPicker] = useState(false)
   const [showToPicker,   setShowToPicker]   = useState(false)
 
+  // Fetch user map for admin view (uid → display name)
+  useEffect(() => {
+    if (!isAdmin) return
+    getDocs(collection(firestore, 'Users')).then(snap => {
+      const map = {}
+      snap.docs.forEach(d => {
+        const data = d.data()
+        map[d.id] = data.username || data.email?.split('@')[0] || 'Unknown'
+      })
+      setUserMap(map)
+    }).catch(() => {})
+  }, [isAdmin])
+
   const fetchClaims = useCallback(async () => {
+    if (!authUser) return
     setLoading(true)
     try {
-      const snap = await getDocs(collection(firestore, 'claims'))
+      let snap
+      if (isAdmin) {
+        // Admin sees every claim
+        snap = await getDocs(collection(firestore, 'claims'))
+      } else {
+        // Regular user sees only their own claims
+        snap = await getDocs(
+          query(collection(firestore, 'claims'), where('userId', '==', authUser.uid))
+        )
+      }
       const data = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => parseInt(a.id) - parseInt(b.id))
@@ -85,11 +119,10 @@ const AllClaim = ({ navigation }) => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [authUser, isAdmin])
 
   useFocusEffect(useCallback(() => { fetchClaims() }, [fetchClaims]))
 
-  // Filter by search
   const filtered = claims.filter(c => {
     if (!search.trim()) return true
     const q = search.toLowerCase()
@@ -98,13 +131,14 @@ const AllClaim = ({ navigation }) => {
       c.companyName?.toLowerCase().includes(q)  ||
       c.segment?.toLowerCase().includes(q)       ||
       c.defectName?.toLowerCase().includes(q)    ||
-      String(c.id).includes(q)
+      String(c.id).includes(q)                  ||
+      (isAdmin && userMap[c.userId]?.toLowerCase().includes(q))
     )
   })
 
-  const totalPages   = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
-  const safePage     = Math.min(currentPage, totalPages)
-  const paginated    = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
+  const safePage   = Math.min(currentPage, totalPages)
+  const paginated  = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE)
 
   const handleViewClaim = (id) =>
     navigation.navigate('Home', { screen: 'SingleClaim', params: { claimId: id } })
@@ -128,13 +162,21 @@ const AllClaim = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
 
+      {/* Admin mode indicator */}
+      {isAdmin && (
+        <View style={styles.adminBar}>
+          <MaterialIcons name="shield" size={13} color="#1565C0" />
+          <Text style={styles.adminBarText}>Admin view — showing all claims</Text>
+        </View>
+      )}
+
       {/* Toolbar */}
       <View style={styles.toolbar}>
         <View style={styles.searchBox}>
           <MaterialIcons name="search" size={18} color="#aaa" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name, company, ID…"
+            placeholder={isAdmin ? 'Search by name, user, company, ID…' : 'Search by name, company, ID…'}
             placeholderTextColor="#bbb"
             value={search}
             onChangeText={t => { setSearch(t); setCurrentPage(1) }}
@@ -185,7 +227,13 @@ const AllClaim = ({ navigation }) => {
         <FlatList
           data={paginated}
           keyExtractor={item => item.id.toString()}
-          renderItem={({ item }) => <ClaimCard item={item} onView={handleViewClaim} />}
+          renderItem={({ item }) => (
+            <ClaimCard
+              item={item}
+              onView={handleViewClaim}
+              submitter={isAdmin ? (userMap[item.userId] || item.userId?.slice(0, 8)) : null}
+            />
+          )}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           onRefresh={fetchClaims}
@@ -296,6 +344,13 @@ const AllClaim = ({ navigation }) => {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#f5f5f8' },
 
+  adminBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#e3f2fd', paddingHorizontal: 16, paddingVertical: 8,
+    borderBottomWidth: 1, borderBottomColor: '#bbdefb',
+  },
+  adminBarText: { fontSize: 12, color: '#1565C0', fontWeight: '600' },
+
   // Toolbar
   toolbar: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -341,28 +396,33 @@ const styles = StyleSheet.create({
   issueBadge: {
     backgroundColor: '#f0e8ff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
   },
-  issueNum: { fontSize: 12, fontWeight: '700', color: '#5C2C92' },
-  cardDate: { fontSize: 12, color: '#999' },
+  issueNum:     { fontSize: 12, fontWeight: '700', color: '#5C2C92' },
+  cardDate:     { fontSize: 12, color: '#999' },
   customerName: { fontSize: 15, fontWeight: '700', color: '#1a1a1a', marginBottom: 2 },
   companyName:  { fontSize: 13, color: '#666', marginBottom: 10 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  pill: {
-    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20,
-    borderWidth: 1,
-  },
-  pillText: { fontSize: 11, fontWeight: '600' },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  metaText: { fontSize: 12, color: '#999' },
+  pillRow:      { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  pill:         { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, borderWidth: 1 },
+  pillText:     { fontSize: 11, fontWeight: '600' },
+  cardFooter:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardMeta:     { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  metaText:     { fontSize: 12, color: '#999' },
   viewBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     backgroundColor: '#f0e8ff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
   },
   viewBtnText: { fontSize: 12, color: '#5C2C92', fontWeight: '700' },
 
+  // Submitter chip (admin only)
+  submitterRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    marginTop: 10, paddingTop: 10,
+    borderTopWidth: 1, borderTopColor: '#f0f0f0',
+  },
+  submitterText: { fontSize: 11, color: '#1565C0', fontWeight: '600' },
+
   // States
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingBottom: 60 },
-  loadingText: { color: '#999', fontSize: 14, marginTop: 8 },
+  center:        { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingBottom: 60 },
+  loadingText:   { color: '#999', fontSize: 14, marginTop: 8 },
   emptyTitle:    { fontSize: 17, fontWeight: '700', color: '#555', marginTop: 4 },
   emptySubtitle: { fontSize: 13, color: '#aaa', textAlign: 'center', paddingHorizontal: 32 },
 
@@ -372,18 +432,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10, paddingHorizontal: 12, gap: 6,
     backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#eee',
   },
-  pageBtn: {
-    width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center',
-  },
+  pageBtn:         { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   pageBtnDisabled: { opacity: 0.35 },
-  pageNumbers: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  pageNumBtn: {
-    width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center',
-  },
-  pageNumActive: { backgroundColor: '#5C2C92' },
+  pageNumbers:     { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  pageNumBtn:      { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  pageNumActive:   { backgroundColor: '#5C2C92' },
   pageNumText:       { fontSize: 13, color: '#555', fontWeight: '600' },
   pageNumTextActive: { color: '#fff' },
-  pageEllipsis: { fontSize: 14, color: '#aaa', paddingHorizontal: 2 },
+  pageEllipsis:      { fontSize: 14, color: '#aaa', paddingHorizontal: 2 },
 
   // Filter sheet
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
@@ -391,27 +447,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
     padding: 24, paddingBottom: 36,
   },
-  sheetHandle: {
-    width: 40, height: 4, backgroundColor: '#ddd', borderRadius: 2,
-    alignSelf: 'center', marginBottom: 20,
-  },
-  sheetTitle: { fontSize: 17, fontWeight: '700', color: '#1a1a1a', marginBottom: 20 },
-  dateLabel:  { fontSize: 12, fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 8 },
-  datePill: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#f0e8ff', borderRadius: 12, padding: 14, marginBottom: 16,
-  },
-  datePillText: { fontSize: 15, color: '#5C2C92', fontWeight: '600' },
-  sheetActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
-  sheetCancelBtn: {
-    flex: 1, height: 48, borderRadius: 12, borderWidth: 1.5, borderColor: '#ddd',
-    alignItems: 'center', justifyContent: 'center',
-  },
+  sheetHandle:   { width: 40, height: 4, backgroundColor: '#ddd', borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  sheetTitle:    { fontSize: 17, fontWeight: '700', color: '#1a1a1a', marginBottom: 20 },
+  dateLabel:     { fontSize: 12, fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: 0.4, marginBottom: 8 },
+  datePill:      { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#f0e8ff', borderRadius: 12, padding: 14, marginBottom: 16 },
+  datePillText:  { fontSize: 15, color: '#5C2C92', fontWeight: '600' },
+  sheetActions:  { flexDirection: 'row', gap: 12, marginTop: 8 },
+  sheetCancelBtn: { flex: 1, height: 48, borderRadius: 12, borderWidth: 1.5, borderColor: '#ddd', alignItems: 'center', justifyContent: 'center' },
   sheetCancelText: { color: '#555', fontWeight: '600', fontSize: 15 },
-  sheetApplyBtn: {
-    flex: 2, height: 48, borderRadius: 12, backgroundColor: '#5C2C92',
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-  },
+  sheetApplyBtn:  { flex: 2, height: 48, borderRadius: 12, backgroundColor: '#5C2C92', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   sheetApplyText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 })
 
