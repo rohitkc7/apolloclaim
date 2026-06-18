@@ -15,7 +15,7 @@ const MODULES = [
   {
     title: 'Scrap Analysis',
     subtitle: 'Submit a new claim',
-    screen: 'Scrap Analysis',
+    screen: 'AddClaim',
     icon: 'assignment-add',
     color: '#5C2C92',
     bg: '#f0e8ff',
@@ -23,7 +23,7 @@ const MODULES = [
   {
     title: 'Complaint Mgmt',
     subtitle: 'View all claims',
-    screen: 'Complaint Management',
+    screen: 'AllClaim',
     icon: 'list-alt',
     color: '#1565C0',
     bg: '#e8f0fe',
@@ -31,7 +31,7 @@ const MODULES = [
   {
     title: 'Fitment Survey',
     subtitle: 'Record fitment data',
-    screen: 'Fitment Survey',
+    screen: 'Fitment',
     icon: 'fact-check',
     color: '#2E7D32',
     bg: '#e8f5e9',
@@ -39,7 +39,7 @@ const MODULES = [
   {
     title: 'Fitment Tracking',
     subtitle: 'Track tyre status',
-    screen: 'Fitment Tracking',
+    screen: 'FitmentTracking',
     icon: 'track-changes',
     color: '#E65100',
     bg: '#fff3e0',
@@ -131,7 +131,7 @@ const HomeApollo = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Quick Action</Text>
         <TouchableOpacity
           style={styles.quickAction}
-          onPress={() => navigation.navigate('Scrap Analysis')}
+          onPress={() => navigation.navigate('AddClaim')}
           activeOpacity={0.85}
         >
           <View style={styles.quickActionLeft}>

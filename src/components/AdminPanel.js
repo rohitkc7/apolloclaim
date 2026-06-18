@@ -99,7 +99,7 @@ const UserCard = ({ user, onApprove, onRevoke, onPromote, onDemote }) => {
   )
 }
 
-const AdminPanel = () => {
+const AdminPanel = ({ navigation }) => {
   const { userProfile } = useUser()
   const [users, setUsers]     = useState([])
   const [loading, setLoading] = useState(true)
@@ -166,7 +166,10 @@ const AdminPanel = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <MaterialIcons name="arrow-back" size={22} color="#1a1a1a" />
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>User Management</Text>
           <Text style={styles.headerSub}>{users.length} registered users</Text>
         </View>
@@ -225,9 +228,13 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#fff', paddingHorizontal: 20, paddingVertical: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 12,
     borderBottomWidth: 1, borderBottomColor: '#eee',
+  },
+  backBtn: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: '#f5f5f8', alignItems: 'center', justifyContent: 'center',
   },
   headerTitle: { fontSize: 20, fontWeight: '800', color: '#1a1a1a' },
   headerSub:   { fontSize: 13, color: '#999', marginTop: 2 },

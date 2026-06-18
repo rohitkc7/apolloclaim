@@ -8,7 +8,7 @@ import {
   View, Text, TouchableOpacity, StyleSheet,
   Image, ActivityIndicator,
 } from 'react-native'
-import { NavigationContainer, DrawerActions } from '@react-navigation/native'
+import { NavigationContainer, DrawerActions, useNavigationState } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -35,22 +35,23 @@ const Drawer    = createDrawerNavigator()
 const Stack     = createStackNavigator()
 const AuthStack = createStackNavigator()
 
-// ─── Navigators ──────────────────────────────────────────────────────────────
+// ─── Main stack — all content screens live here ────────────────────────────────
+// This gives every screen a natural "back" through the stack.
 
 const MainStackNavigator = () => (
   <Stack.Navigator
     initialRouteName="HomeApollo"
     screenOptions={{ headerShown: false }}
   >
-    <Stack.Screen name="HomeApollo"  component={HomeApollo} />
-    <Stack.Screen name="AddClaim"    component={AddClaim}
-      options={{ headerShown: true, title: 'New Claim', headerBackTitle: '' }} />
-    <Stack.Screen name="AllClaim"    component={AllClaim}
-      options={{ headerShown: true, title: 'All Claims', headerBackTitle: '' }} />
-    <Stack.Screen name="SingleClaim" component={SingleClaim}
-      options={{ headerShown: true, headerBackTitle: '' }} />
-    <Stack.Screen name="EditClaim"   component={EditClaim}
-      options={{ headerShown: true, title: 'Edit Claim', headerBackTitle: '' }} />
+    <Stack.Screen name="HomeApollo"      component={HomeApollo} />
+    <Stack.Screen name="AddClaim"        component={AddClaim} />
+    <Stack.Screen name="AllClaim"        component={AllClaim} />
+    <Stack.Screen name="SingleClaim"     component={SingleClaim} />
+    <Stack.Screen name="EditClaim"       component={EditClaim} />
+    <Stack.Screen name="Fitment"         component={Fitment} />
+    <Stack.Screen name="FitmentTracking" component={FitmentTracking} />
+    <Stack.Screen name="Profile"         component={Profile} />
+    <Stack.Screen name="AdminPanel"      component={AdminPanel} />
   </Stack.Navigator>
 )
 
@@ -62,28 +63,43 @@ const AuthNavigator = () => (
 )
 
 // ─── Drawer items ─────────────────────────────────────────────────────────────
+// stackScreen: the name registered in MainStackNavigator
 
 const BASE_ITEMS = [
-  { label: 'Home',                 screen: 'Home',                 icon: 'home'          },
-  { label: 'Scrap Analysis',       screen: 'Scrap Analysis',       icon: 'assignment-add' },
-  { label: 'Complaint Management', screen: 'Complaint Management', icon: 'list-alt'      },
-  { label: 'Scrap Summary',        screen: 'Scrap Summary',        icon: 'bar-chart'     },
-  { label: 'Fitment Survey',       screen: 'Fitment Survey',       icon: 'fact-check'    },
-  { label: 'Fitment Tracking',     screen: 'Fitment Tracking',     icon: 'track-changes' },
+  { label: 'Home',                 stackScreen: 'HomeApollo',      icon: 'home'          },
+  { label: 'Scrap Analysis',       stackScreen: 'AddClaim',        icon: 'assignment-add' },
+  { label: 'Complaint Management', stackScreen: 'AllClaim',        icon: 'list-alt'      },
+  { label: 'Scrap Summary',        stackScreen: 'AllClaim',        icon: 'bar-chart'     },
+  { label: 'Fitment Survey',       stackScreen: 'Fitment',         icon: 'fact-check'    },
+  { label: 'Fitment Tracking',     stackScreen: 'FitmentTracking', icon: 'track-changes' },
 ]
-const ADMIN_ITEM = { label: 'User Management', screen: 'User Management', icon: 'admin-panel-settings' }
+const ADMIN_ITEM = {
+  label: 'User Management', stackScreen: 'AdminPanel', icon: 'admin-panel-settings',
+}
 
-// ─── Custom Drawer Content ────────────────────────────────────────────────────
+// ─── Custom Drawer ─────────────────────────────────────────────────────────────
 
 const CustomDrawer = (props) => {
-  const { state, navigation } = props
+  const { navigation } = props
   const { authUser, userProfile, isAdmin } = useUser()
-  const activeRouteName = state.routes[state.index]?.name
+
+  // Track which stack screen is currently active so we can highlight the right item.
+  const activeScreen = useNavigationState(state => {
+    const homeRoute = state?.routes?.find(r => r.name === 'Home')
+    if (!homeRoute?.state) return 'HomeApollo'
+    const s = homeRoute.state
+    return s.routes[s.index ?? 0]?.name ?? 'HomeApollo'
+  })
 
   const displayName = userProfile?.username || authUser?.email?.split('@')[0] || 'User'
   const initials    = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-
   const drawerItems = isAdmin ? [...BASE_ITEMS, ADMIN_ITEM] : BASE_ITEMS
+
+  const goTo = (stackScreen) => {
+    // Navigate into the Home stack then close the drawer.
+    navigation.navigate('Home', { screen: stackScreen })
+    navigation.dispatch(DrawerActions.closeDrawer())
+  }
 
   const handleLogout = () => {
     signOut(auth)
@@ -124,19 +140,19 @@ const CustomDrawer = (props) => {
         contentContainerStyle={styles.drawerScroll}
         showsVerticalScrollIndicator={false}
       >
-        {drawerItems.map((item) => {
-          const isActive = activeRouteName === item.screen
-          const isAdminItem = item.screen === 'User Management'
+        {drawerItems.map((item, i) => {
+          const isActive    = activeScreen === item.stackScreen
+          const isAdminItem = item.stackScreen === 'AdminPanel'
           return (
             <TouchableOpacity
-              key={item.screen}
+              key={`${item.stackScreen}-${i}`}
               style={[styles.drawerItem, isActive && styles.drawerItemActive]}
-              onPress={() => navigation.navigate(item.screen)}
+              onPress={() => goTo(item.stackScreen)}
             >
               <View style={[
                 styles.drawerItemIcon,
-                isActive && styles.drawerItemIconActive,
-                isAdminItem && styles.drawerItemIconAdmin,
+                isActive     && styles.drawerItemIconActive,
+                isAdminItem  && styles.drawerItemIconAdmin,
               ]}>
                 <MaterialIcons
                   name={item.icon}
@@ -146,7 +162,7 @@ const CustomDrawer = (props) => {
               </View>
               <Text style={[
                 styles.drawerItemLabel,
-                isActive && styles.drawerItemLabelActive,
+                isActive    && styles.drawerItemLabelActive,
                 isAdminItem && styles.drawerItemLabelAdmin,
               ]}>
                 {item.label}
@@ -158,13 +174,7 @@ const CustomDrawer = (props) => {
 
       {/* Footer */}
       <View style={styles.drawerFooter}>
-        <TouchableOpacity
-          style={styles.drawerFooterItem}
-          onPress={() => {
-            navigation.navigate('Profile')
-            navigation.dispatch(DrawerActions.closeDrawer())
-          }}
-        >
+        <TouchableOpacity style={styles.drawerFooterItem} onPress={() => goTo('Profile')}>
           <MaterialIcons name="person-outline" size={20} color="#555" />
           <Text style={styles.drawerFooterLabel}>Profile</Text>
         </TouchableOpacity>
@@ -177,7 +187,9 @@ const CustomDrawer = (props) => {
   )
 }
 
-// ─── Drawer Navigator ─────────────────────────────────────────────────────────
+// ─── Drawer Navigator ──────────────────────────────────────────────────────────
+// Only ONE screen here — Home — which is the entire stack.
+// The drawer is purely a navigation panel; all back-stack logic lives in MainStackNavigator.
 
 const DrawerNavigator = () => (
   <Drawer.Navigator
@@ -188,23 +200,15 @@ const DrawerNavigator = () => (
       drawerStyle: { width: 300, backgroundColor: 'transparent' },
     }}
   >
-    <Drawer.Screen name="Home"                 component={MainStackNavigator} />
-    <Drawer.Screen name="Scrap Analysis"       component={AddClaim} />
-    <Drawer.Screen name="Complaint Management" component={AllClaim} />
-    <Drawer.Screen name="Scrap Summary"        component={AllClaim} />
-    <Drawer.Screen name="Fitment Survey"       component={Fitment} />
-    <Drawer.Screen name="Fitment Tracking"     component={FitmentTracking} />
-    <Drawer.Screen name="Profile"              component={Profile} />
-    <Drawer.Screen name="User Management"      component={AdminPanel} />
+    <Drawer.Screen name="Home" component={MainStackNavigator} />
   </Drawer.Navigator>
 )
 
-// ─── App root (reads context) ─────────────────────────────────────────────────
+// ─── App root ─────────────────────────────────────────────────────────────────
 
 const AppRoot = () => {
   const { authUser, isApproved, loadingProfile } = useUser()
 
-  // Still resolving auth state or Firestore profile
   if (authUser === undefined || (authUser !== null && loadingProfile)) {
     return (
       <View style={styles.splash}>
@@ -231,7 +235,7 @@ const App = () => (
   </UserProvider>
 )
 
-// ─── Drawer Styles ────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   splash: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f8' },

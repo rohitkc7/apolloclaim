@@ -141,7 +141,7 @@ const AllClaim = ({ navigation }) => {
   const paginated  = filtered.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE)
 
   const handleViewClaim = (id) =>
-    navigation.navigate('Home', { screen: 'SingleClaim', params: { claimId: id } })
+    navigation.navigate('SingleClaim', { claimId: id })
 
   const applyDateFilter = () => {
     const end = new Date(toDate); end.setHours(23, 59, 59)
@@ -161,6 +161,14 @@ const AllClaim = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
+
+      {/* Page header with back button */}
+      <View style={styles.pageHeader}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <MaterialIcons name="arrow-back" size={22} color="#1a1a1a" />
+        </TouchableOpacity>
+        <Text style={styles.pageTitle}>Complaint Management</Text>
+      </View>
 
       {/* Admin mode indicator */}
       {isAdmin && (
@@ -343,6 +351,18 @@ const AllClaim = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#f5f5f8' },
+
+  // Page header
+  pageHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: '#eee',
+  },
+  backBtn: {
+    width: 40, height: 40, borderRadius: 12,
+    backgroundColor: '#f5f5f8', alignItems: 'center', justifyContent: 'center',
+  },
+  pageTitle: { fontSize: 18, fontWeight: '700', color: '#1a1a1a' },
 
   adminBar: {
     flexDirection: 'row', alignItems: 'center', gap: 6,

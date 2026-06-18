@@ -98,6 +98,11 @@ const Profile = ({ navigation }) => {
 
         {/* ── Purple hero banner ──────────────────────────── */}
         <View style={styles.hero}>
+          {/* Back button */}
+          <TouchableOpacity style={styles.heroBackBtn} onPress={() => navigation.goBack()}>
+            <MaterialIcons name="arrow-back" size={20} color="#fff" />
+          </TouchableOpacity>
+
           {/* Avatar */}
           <View style={[styles.avatarRing, isAdmin && styles.avatarRingAdmin]}>
             <View style={[styles.avatarCircle, isAdmin && styles.avatarCircleAdmin]}>
@@ -200,7 +205,7 @@ const Profile = ({ navigation }) => {
               label="User Management"
               color="#1565C0"
               bg="#e3f2fd"
-              onPress={() => navigation.navigate('User Management')}
+              onPress={() => navigation.navigate('AdminPanel')}
             />
             <View style={styles.divider} />
             <ActionRow
@@ -208,7 +213,7 @@ const Profile = ({ navigation }) => {
               label="View All Claims"
               color="#1565C0"
               bg="#e3f2fd"
-              onPress={() => navigation.navigate('Complaint Management')}
+              onPress={() => navigation.navigate('AllClaim')}
             />
           </View>
         )}
@@ -235,7 +240,14 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: '#5C2C92',
     alignItems: 'center',
-    paddingTop: 36, paddingBottom: 32, paddingHorizontal: 24,
+    paddingTop: 16, paddingBottom: 32, paddingHorizontal: 24,
+  },
+  heroBackBtn: {
+    alignSelf: 'flex-start',
+    width: 38, height: 38, borderRadius: 11,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 16,
   },
   avatarRing: {
     width: 96, height: 96, borderRadius: 48,

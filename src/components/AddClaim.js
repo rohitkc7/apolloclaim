@@ -84,7 +84,7 @@ const AddClaim = ({ navigation }) => {
       })
       setFormData(initialFormData)
       Toast.show({ type: 'success', text1: 'Submitted!', text2: 'Claim saved successfully.' })
-      setTimeout(() => navigation.navigate('Home', { screen: 'HomeApollo' }), 1800)
+      setTimeout(() => navigation.navigate('HomeApollo'), 1800)
     } catch (error) {
       console.error('Submit failed:', error)
       Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to save claim. Try again.' })
@@ -127,7 +127,7 @@ const AddClaim = ({ navigation }) => {
           onPress: () => {
             setFormData(initialFormData)
             setCurrentPage(1)
-            navigation.navigate('Home')
+            navigation.navigate('HomeApollo')
           },
         },
       ],
