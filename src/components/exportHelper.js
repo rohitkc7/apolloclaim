@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing'
 import XLSX from 'xlsx'
 import { Alert } from 'react-native'
 
-const MAX_PHOTOS = 3   // columns: Photo 1, Photo 2, Photo 3
+const MAX_PHOTOS = 10  // matches the 10-image upload limit in Form2
 
 const getPhotos = (claim) => {
   if (Array.isArray(claim.photos)) return claim.photos
