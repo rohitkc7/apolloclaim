@@ -2,12 +2,12 @@ import React, { useState, useRef } from 'react'
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   ActivityIndicator, KeyboardAvoidingView, Platform,
-  ScrollView, Image,
+  ScrollView, Image, Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { auth } from '../../firebaseConfig'
-import { signInWithEmailAndPassword } from 'firebase/auth'
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
 
 const Login = ({ navigation }) => {
   const [email, setEmail]       = useState('')
@@ -16,6 +16,31 @@ const Login = ({ navigation }) => {
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState('')
   const passwordRef = useRef(null)
+
+  const handleForgotPassword = async () => {
+    const target = email.trim()
+    if (!target) {
+      setError('Enter your email address above, then tap Forgot Password.')
+      return
+    }
+    setLoading(true)
+    try {
+      await sendPasswordResetEmail(auth, target)
+      Alert.alert(
+        'Reset Email Sent',
+        `A password reset link has been sent to ${target}.\n\nCheck your inbox (and spam folder).`,
+      )
+    } catch (e) {
+      const msg = e.code === 'auth/user-not-found'
+        ? 'No account found with this email address.'
+        : e.code === 'auth/invalid-email'
+          ? 'Please enter a valid email address.'
+          : 'Failed to send reset email. Please try again.'
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
@@ -107,6 +132,10 @@ const Login = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
+            <TouchableOpacity style={styles.forgotBtn} onPress={handleForgotPassword}>
+              <Text style={styles.forgotText}>Forgot Password?</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={[styles.loginBtn, loading && styles.loginBtnDisabled]}
               onPress={handleLogin}
@@ -166,6 +195,11 @@ const styles = StyleSheet.create({
   inputIcon: { marginRight: 8 },
   input:     { flex: 1, fontSize: 15, color: '#1a1a1a' },
   eyeBtn:    { padding: 4 },
+
+  forgotBtn: {
+    alignSelf: 'flex-end', marginBottom: 16, marginTop: -6,
+  },
+  forgotText: { fontSize: 13, color: '#5C2C92', fontWeight: '600' },
 
   loginBtn: {
     backgroundColor: '#5C2C92', borderRadius: 14, height: 52,
